@@ -214,7 +214,7 @@ def get_nb_element_by_class(lbls: set[str], data: list[dict]) -> dict:
         data (list[dict]): data
 
     Returns:
-        dict: _description_
+        dict: { name of the class : number of element of that class }
     """
     res = {}
     for l in lbls:
@@ -228,35 +228,44 @@ def get_sample(
     data: list[dict],
     all_lbls: set,
     sample_per_class: dict
-) -> list[dict]:
+) -> tuple[list[dict], dict]:
     """Sample a Dataset
 
     Args:
-        data (list[dict]): data to sample
+        data (list[dict]): Data to sample
         all_lbls (set): labels of the dataset
-        sample_per_class (dict): number of element to sample per class
+        sample_per_class (dict): number of element to sample per label
 
     Returns:
-        list[dict]: sampled_data 
+        tuple[list[dict], dict]: list of the sampled data and dictionary where the values are the number of oversampled data
     """
     res = []
+    oversample_length = {}
     for l in all_lbls:
         tmp = [x for x in data if l in x.get('label')]
         if len(tmp) < sample_per_class.get(l):
             try:
-                n_sample_length = sample_per_class.get(l) - len(tmp)
-                sample = random.sample(tmp, len(tmp))
-                over = random.sample(tmp, n_sample_length)
+                q, r = np.divmod(sample_per_class.get(l), len(tmp))
+                sample = []
+                for i in range(q):
+                    over = random.sample(tmp, len(tmp))
+                    sample.extend(over)
+                over = random.sample(tmp, r)
                 sample.extend(over)
-            except Exception:
+                oversample_length.update({
+                    l: sample_per_class.get(l) - len(tmp)
+                })
+            except ZeroDivisionError:
                 print(f'tmp: {tmp}')
                 print(f'label: {l}')
                 print(f'sample_per_class : {sample_per_class}')
-                print(f'sample_lenght : {n_sample_length}')
+                print(f'sample_lenght : {sample_per_class.get(l)}')
+                res.extend([])
         else:
             sample = random.sample(tmp, sample_per_class.get(l))
+            oversample_length.update({l: 0})
         res.extend(sample)
-    return res
+    return res, oversample_length
 
 def get_nb_elmt_and_labels(data: dict) -> tuple[set, dict]:
     """Get the number of element of each class and all the labels from each dataset
@@ -265,7 +274,7 @@ def get_nb_elmt_and_labels(data: dict) -> tuple[set, dict]:
         data (dict): dict containing all the data to sample for the task
 
     Returns:
-        tuple[set, dict]: set of all the labels and dictionary containing the number of element of each class
+        tuple[set, dict] : set of all the labels and dictionary containing the number of element of each class
     """
     nb_elmt = {}
     all_lbls = set()
@@ -322,6 +331,7 @@ def sample_data(data: dict, n_sample=300) -> dict:
         { 'name of the dataset' : data sample from the dataset }
     """
     sampled_data = {}
+    oversample_data = {}
     all_lbls, nb_elmt = get_nb_elmt_and_labels(data)
     n = n_sample / len(all_lbls)
     df_elmt = pd.DataFrame().from_dict(nb_elmt)
@@ -329,12 +339,20 @@ def sample_data(data: dict, n_sample=300) -> dict:
     df_sample_per_class = df_ratio.apply(get_nb_sample_per_class, axis=1)
     d = df_sample_per_class.T.to_dict('index')
     for k,v in data.items():
-        sampled_data.update({k: get_sample(v.get('train'), all_lbls, d.get(k))})
-    return sampled_data, all_lbls
+        sample, oversampled_length = get_sample(
+            data=v.get('train'),
+            all_lbls=all_lbls,
+            sample_per_class=d.get(k)
+        )
+        sampled_data.update({k: sample})
+        oversample_data.update({k: oversampled_length})
+    stat_sample = {
+        'sample_per_label':  d,
+        'oversample_per_label': oversample_data
+    }
+    return sampled_data, all_lbls, stat_sample
 
 ### Prompting Function ###
-# \nRespond in the following format with the explanation in the reasoning section and only the fallacy in the answer section:\n <reasoning>\n...\n</reasoning>\n<answer>\n...\n</answer>
-SYSTEM_PROMPT = 'You are an expert in argumentation. Your task is to determine the type of fallacy in the given Sentence. The fallacy would be in the Fallacy Set. Utilize the Title and the Full Text as context to support your decision and provide an explanation of the reasoning behind your determination.'
 
 def format_label(lbl: str | list) -> str:
     """Format the label to put as the answer
@@ -366,12 +384,12 @@ def format_user_prompt(d: dict, labels: set) -> str:
     if 'text' in d:
         full_text = d.get('text')
     if 'respond_to' in d:
-        full_text = f'{d.get('respond_to')} {d.get('sentences')}'
-    sentences = f' {d.get('sentences')}'
-    user_prt = f'Fallacy: {labels}\nTitle: {title}\nSentence: {sentences}\nFull text: {full_text}\n'
+        full_text = f'{d.get("respond_to")} {d.get("sentences")}'
+    sentences = f' {d.get("sentences")}'
+    user_prt = f'[FALLACY]: {labels}\n[TITLE]: {title}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-def format_prompt(data: dict, labels: set) -> list[dict]:
+def format_prompt(data: dict, labels: set, system_prompt: str) -> list[dict]:
     """Format the data into a prompt template
 
     Args:
@@ -383,15 +401,29 @@ def format_prompt(data: dict, labels: set) -> list[dict]:
     res = []
     for k,v in data.items():
         for val in v:
-            d = {
-                'datasets': k,
-                'prompt': [
-                    {'role': 'system', 'content': SYSTEM_PROMPT},
-                    {'role': 'user', 'content': format_user_prompt(val, labels)}
-                ],
-                'answer': format_label(val.get('label'))
-            }
-            res.append(d)
+            if isinstance(val.get('label'), list):
+                for i in val.get('label'):
+                    d = {
+                        'datasets': k,
+                        'prompt': [
+                            {'role': 'system', 'content': system_prompt},
+                            {'role': 'user',
+                             'content': format_user_prompt(val, labels)}
+                        ],
+                        'answer': i
+                    }
+                    res.append(d)
+            else:
+                d = {
+                    'datasets': k,
+                    'prompt': [
+                        {'role': 'system', 'content': system_prompt},
+                        {'role': 'user',
+                         'content': format_user_prompt(val, labels)}
+                    ],
+                    'answer': val.get('label')
+                }
+                res.append(d)
     return res
 
 if __name__ == '__main__':

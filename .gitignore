@@ -23,3 +23,5 @@ target/
 *.pyc
 
 unsloth_compiled_cache/
+
+*.csv
