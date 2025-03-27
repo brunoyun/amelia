@@ -23,5 +23,6 @@ target/
 *.pyc
 
 unsloth_compiled_cache/
+outputs/
 
 *.csv

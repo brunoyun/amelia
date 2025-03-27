@@ -81,9 +81,10 @@ def get_lbl_mafalda(lst_s: list[dict]) -> set:
             lbl_mafalda.add(i)
     return lbl_mafalda
 
-def get_train_test_split(
+def get_train_val_test_split(
     data: list[dict],
     lbls: set[str],
+    val_size=0.2,
     test_size=0.2
 ) -> tuple[list[dict], list[dict]]:
     """Separate the data into train and test splits
@@ -91,23 +92,33 @@ def get_train_test_split(
     Args:
         data (list[dict]): all data
         lbls (set[str]): all the label
+        val_size (float, optional): percentage of the data to use for the validation split (value between 0.0 and 1.0). Defaults to 0.2.
         test_size (float, optional): percentage of the data to use for the test split (value between 0.0 and 1.0). Defaults to 0.2.
 
     Returns:
         tuple[list[dict], list[dict]]: train_split, test_split
     """
     test_sample = []
-    n = len(data)*test_size
+    validation_sample = []
+    n_val = len(data)*val_size
+    n_test = len(data)*test_size
     nb_elmt = get_nb_element_by_class(lbls, data)
     for l in lbls:
         ratio = nb_elmt.get(l) / sum(nb_elmt.values())
-        n_sample = int(ratio*n)
+        n_sample_val = int(ratio*n_val)
+        n_sample_test = int(ratio*n_test)
         tmp = [x for x in data if l in x.get('label')]
-        sample = random.sample(tmp, n_sample)
-        test_sample.extend(sample)
+        sample_val = random.sample(tmp, n_sample_val)
+        tmp = [x for x in tmp if x not in sample_val]
+        sample_test = random.sample(tmp, n_sample_test)
+        validation_sample.extend(sample_val)
+        test_sample.extend(sample_test)
+    validation_sample = random.sample(validation_sample, len(validation_sample))
     test_sample = random.sample(test_sample, len(test_sample))
-    train_sample = [s for s in data if s not in test_sample]
-    return train_sample, test_sample
+    train_sample = [
+        s for s in data if s not in test_sample and s not in validation_sample
+    ]
+    return train_sample, validation_sample, test_sample
 
 def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
     """Load the CoCoLoFa dataset from file
@@ -143,9 +154,13 @@ def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
             })
             sentences.append(tmp)
     lbls_cocolofa = get_lbl_cocolofa(sentences)
-    train_set, test_set = get_train_test_split(sentences, lbls_cocolofa)
+    train_set, validation_set, test_set = get_train_val_test_split(
+        data=sentences,
+        lbls=lbls_cocolofa
+    )
     res = {
         'train': train_set,
+        'validation': validation_set,
         'test': test_set,
         'list_label': lbls_cocolofa
     }
@@ -179,9 +194,13 @@ def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
                     })
                     sentences.append(tmp)
     lbls_mafalda = get_lbl_mafalda(sentences)
-    train_set, test_set = get_train_test_split(sentences, lbls_mafalda)
+    train_set, validation_set, test_set = get_train_val_test_split(
+        data=sentences,
+        lbls=lbls_mafalda
+    )
     res = {
         'train' : train_set,
+        'validation': validation_set,
         'test': test_set,
         'list_label': lbls_mafalda
     }
@@ -260,7 +279,7 @@ def get_sample(
                 print(f'label: {l}')
                 print(f'sample_per_class : {sample_per_class}')
                 print(f'sample_lenght : {sample_per_class.get(l)}')
-                res.extend([])
+                # res.extend([])
         else:
             sample = random.sample(tmp, sample_per_class.get(l))
             oversample_length.update({l: 0})
@@ -354,19 +373,6 @@ def sample_data(data: dict, n_sample=300) -> dict:
 
 ### Prompting Function ###
 
-def format_label(lbl: str | list) -> str:
-    """Format the label to put as the answer
-
-    Args:
-        lbl (str | list): label of the element
-
-    Returns:
-        str: String representing the label
-    """
-    if isinstance(lbl, list):
-        lbl = ', '.join(lbl)
-    return lbl
-
 def format_user_prompt(d: dict, labels: set) -> str:
     """Format the user prompt
 
@@ -389,7 +395,58 @@ def format_user_prompt(d: dict, labels: set) -> str:
     user_prt = f'[FALLACY]: {labels}\n[TITLE]: {title}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-def format_prompt(data: dict, labels: set, system_prompt: str) -> list[dict]:
+def get_prompt(
+    data: list[dict],
+    names: str,
+    labels: set,
+    system_prompt: str
+) -> list[dict]:
+    res = []
+    for d in data:
+        if isinstance(d.get('label'), list):
+            for i in d.get('label'):
+                p = {
+                    'datasets': names,
+                    'prompt': [
+                        {'role': 'system', 'content': system_prompt},
+                        {'role': 'user', 'content': format_user_prompt(d, labels)}
+                    ],
+                    'answer': i
+                }
+                res.append(p)
+        else:
+            p = {
+                'datasets': names,
+                'prompt': [
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': format_user_prompt(d, labels)}
+                ],
+                'answer': d.get('label')
+            }
+            res.append(p)
+    return res
+
+def get_prompt_test_val(
+    data: dict,
+    labels: set,
+    system_prompt: str
+) -> tuple[list[dict], list[dict]]:
+    res_val = []
+    res_test = []
+    for k,v in data.items():
+        res_val.extend(
+            get_prompt(v.get('validation'), k, labels, system_prompt)
+        )
+        res_test.extend(
+            get_prompt(v.get('test'), k, labels, system_prompt)
+        )
+    return res_val, res_test
+
+def get_prompt_train_sample(
+    data: dict,
+    labels: set,
+    system_prompt: str
+) -> list[dict]:
     """Format the data into a prompt template
 
     Args:
@@ -408,7 +465,9 @@ def format_prompt(data: dict, labels: set, system_prompt: str) -> list[dict]:
                         'prompt': [
                             {'role': 'system', 'content': system_prompt},
                             {'role': 'user',
-                             'content': format_user_prompt(val, labels)}
+                             'content': format_user_prompt(val, labels)},
+                            {'role': 'assistant', 'content': 
+                                f'<|ANSWER|>{i}<|ANSWER|>.'}
                         ],
                         'answer': i
                     }
@@ -419,12 +478,11 @@ def format_prompt(data: dict, labels: set, system_prompt: str) -> list[dict]:
                     'prompt': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
-                         'content': format_user_prompt(val, labels)}
+                         'content': format_user_prompt(val, labels)},
+                        {'role': 'assistant', 'content': 
+                            f'<|ANSWER|>{val.get("label")}<|ANSWER|>.'}
                     ],
                     'answer': val.get('label')
                 }
                 res.append(d)
     return res
-
-if __name__ == '__main__':
-    pass
