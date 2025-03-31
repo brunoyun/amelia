@@ -81,6 +81,30 @@ def get_lbl_mafalda(lst_s: list[dict]) -> set:
             lbl_mafalda.add(i)
     return lbl_mafalda
 
+def get_all_labels(data: dict) -> set:
+    labels = set()
+    for k,v in data.items():
+        labels = labels.union(v.get('list_label'))
+    return labels
+
+def get_nb_element_by_class(lbls: set[str], data: list[dict]) -> dict:
+    """Get the number of element of each class
+
+    Args:
+        lbls (set[str]): labels of each file
+        data (list[dict]): data
+
+    Returns:
+        dict: { name of the class : number of element of that class }
+    """
+    res = {}
+    for l in lbls:
+        tmp = [
+            x for x in data if l in x.get('label')
+        ]
+        res.update({l: len(tmp)})
+    return res
+
 def get_train_val_test_split(
     data: list[dict],
     lbls: set[str],
@@ -221,155 +245,65 @@ def load_all_dataset(paths: dict) -> dict:
         'cocolofa': load_cocolofa(paths.get('cocolofa')),
         'mafalda': load_mafalfa(paths.get('mafalda'))
     }
-    return res
+    labels = get_all_labels(res)
+    return res, labels
 
 ### Sampling Function ###
 
-def get_nb_element_by_class(lbls: set[str], data: list[dict]) -> dict:
-    """Get the number of element of each class
+def get_nb_element(labels: list[str]):
+    labels = list(itertools.chain.from_iterable(labels))
+    df = pd.DataFrame(labels)
+    return df.value_counts()
+    
 
-    Args:
-        lbls (set[str]): labels of each file
-        data (list[dict]): data
-
-    Returns:
-        dict: { name of the class : number of element of that class }
-    """
-    res = {}
-    for l in lbls:
-        tmp = [
-            x for x in data if l in x.get('label')
-        ]
-        res.update({l: len(tmp)})
-    return res
-
-def get_sample(
-    data: list[dict],
-    all_lbls: set,
-    sample_per_class: dict
-) -> tuple[list[dict], dict]:
-    """Sample a Dataset
-
-    Args:
-        data (list[dict]): Data to sample
-        all_lbls (set): labels of the dataset
-        sample_per_class (dict): number of element to sample per label
-
-    Returns:
-        tuple[list[dict], dict]: list of the sampled data and dictionary where the values are the number of oversampled data
-    """
-    res = []
-    oversample_length = {}
-    for l in all_lbls:
-        tmp = [x for x in data if l in x.get('label')]
-        if len(tmp) < sample_per_class.get(l):
-            try:
-                q, r = np.divmod(sample_per_class.get(l), len(tmp))
-                sample = []
-                for i in range(q):
-                    over = random.sample(tmp, len(tmp))
-                    sample.extend(over)
-                over = random.sample(tmp, r)
-                sample.extend(over)
-                oversample_length.update({
-                    l: sample_per_class.get(l) - len(tmp)
-                })
-            except ZeroDivisionError:
-                print(f'tmp: {tmp}')
-                print(f'label: {l}')
-                print(f'sample_per_class : {sample_per_class}')
-                print(f'sample_lenght : {sample_per_class.get(l)}')
-                # res.extend([])
-        else:
-            sample = random.sample(tmp, sample_per_class.get(l))
-            oversample_length.update({l: 0})
-        res.extend(sample)
-    return res, oversample_length
-
-def get_nb_elmt_and_labels(data: dict) -> tuple[set, dict]:
-    """Get the number of element of each class and all the labels from each dataset
-
-    Args:
-        data (dict): dict containing all the data to sample for the task
-
-    Returns:
-        tuple[set, dict] : set of all the labels and dictionary containing the number of element of each class
-    """
-    nb_elmt = {}
-    all_lbls = set()
-    for k,v in data.items():
-        nb_elmt.update({
-            k: get_nb_element_by_class(v.get('list_label'), v.get('train'))
-        })
-        all_lbls = all_lbls.union(v.get('list_label'))
-    return all_lbls, nb_elmt
-
-def get_ratio(x: pd.Series, n: float) -> pd.Series:
-    """Get the sample ratio for a class in each dataset
-
-    Args:
-        x (pd.Series): number of element of a specific class
-        n (float): number of element to sample in each class
-
-    Returns:
-        pd.Series: pandas Series containing the number of element to sample in a specific class
-    """
-    res = []
-    lst = x.to_list()
-    for i in range(len(lst)):
-        res.append((lst[i] / x.sum())*n)
-    return pd.Series(res, index=x.index)
-
-def get_nb_sample_per_class(x: pd.Series) -> pd.Series:
-    """Round the number of element to sample per class
-
-    Args:
-        x (pd.Series): number of element to sample in each dataset for a specific class
-
-    Returns:
-        pd.Series: pandas Series containing the round number of element to sample in each dataset for a specific class
-    """
-    res = []
-    lst = x.to_list()
-    for i in range(len(lst)):
-        if lst[i] == x.min():
-            res.append(int(np.ceil(lst[i])))
-        else:
-            res.append(int(lst[i]))
-    return pd.Series(res, index=x.index)
-
-def sample_data(data: dict, n_sample=300) -> dict:
-    """Sample all the datasets for a specific task
-
-    Args:
-        data (dict): dictionary containing all the data
-        n_sample (int, optional): number of element to sample across all the datasets. Defaults to 300.
-
-    Returns:
-        dict: dictionary containing the sampled data in each dataset:
-        { 'name of the dataset' : data sample from the dataset }
-    """
-    sampled_data = {}
-    oversample_data = {}
-    all_lbls, nb_elmt = get_nb_elmt_and_labels(data)
-    n = n_sample / len(all_lbls)
-    df_elmt = pd.DataFrame().from_dict(nb_elmt)
-    df_ratio = df_elmt.apply(lambda x: get_ratio(x, n), axis=1).fillna(0)
-    df_sample_per_class = df_ratio.apply(get_nb_sample_per_class, axis=1)
-    d = df_sample_per_class.T.to_dict('index')
-    for k,v in data.items():
-        sample, oversampled_length = get_sample(
-            data=v.get('train'),
-            all_lbls=all_lbls,
-            sample_per_class=d.get(k)
+def get_spl_datasets(
+    data: pd.DataFrame,
+    labels: set,
+    n_sample: int,
+    nb_element: pd.Series
+):
+    oversampled_labels = {}
+    spl_lst = []
+    for l in labels:
+        # print(l)
+        df_tmp = data.apply(
+            lambda x: x if l in x['answer'] else np.nan,
+            result_type='broadcast',
+            axis=1
+        ).dropna()
+        # print(df_tmp['prompt'].value_counts().values)
+        df_tmp = df_tmp.drop_duplicates(subset=['prompt'])
+        # print(df_tmp['prompt'].value_counts().values)
+        n_sample_label = int(
+            np.round(len(df_tmp) / (nb_element.loc[l].iloc[0]) * n_sample)
         )
-        sampled_data.update({k: sample})
-        oversample_data.update({k: oversampled_length})
-    stat_sample = {
-        'sample_per_label':  d,
-        'oversample_per_label': oversample_data
-    }
-    return sampled_data, all_lbls, stat_sample
+        oversampled_labels.update({l: 0})
+        try:
+            df_spl = df_tmp.sample(n=n_sample_label)
+        except ValueError:
+            df_spl = df_tmp.sample(n=n_sample_label, replace=True)
+            oversampled_labels.update({l: int(n_sample_label - len(df_tmp))})
+        spl_lst.append(df_spl)
+    df_spl = pd.concat(spl_lst)
+    return df_spl, oversampled_labels
+
+def get_spl(
+    data: pd.DataFrame,
+    labels: set,
+    n_sample: int = 300
+):
+    lst_spl = []
+    oversampled_label = {}
+    nb_spl = int(n_sample / len(labels))
+    nb_element = get_nb_element(data['answer'].to_list())
+    names_dataset = data['datasets'].value_counts().index.to_list()
+    for n in names_dataset:
+        df = data.loc[data['datasets'] == n]
+        df_spl, oversample = get_spl_datasets(df, labels, nb_spl, nb_element)
+        oversampled_label.update({n: oversample})
+        lst_spl.append(df_spl)
+    df_res = pd.concat(lst_spl)
+    return df_res, oversampled_label
 
 ### Prompting Function ###
 
@@ -395,13 +329,13 @@ def format_user_prompt(d: dict, labels: set) -> str:
     user_prt = f'[FALLACY]: {labels}\n[TITLE]: {title}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-def get_prompt(
+def get_prt_train(
     data: list[dict],
     names: str,
     labels: set,
     system_prompt: str
 ) -> list[dict]:
-    res = []
+    prt = []
     for d in data:
         if isinstance(d.get('label'), list):
             for i in d.get('label'):
@@ -409,80 +343,76 @@ def get_prompt(
                     'datasets': names,
                     'prompt': [
                         {'role': 'system', 'content': system_prompt},
-                        {'role': 'user', 'content': format_user_prompt(d, labels)}
+                        {'role': 'user',
+                         'content': format_user_prompt(d, labels)},
+                        {'role': 'assistant', 'content': 
+                            f'<|ANSWER|>{i}<|ANSWER|>.'}
                     ],
-                    'answer': i
+                    'answer': d.get('label')
                 }
-                res.append(p)
+                prt.append(p)
         else:
             p = {
                 'datasets': names,
                 'prompt': [
                     {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': format_user_prompt(d, labels)}
+                    {'role': 'user', 'content': format_user_prompt(d, labels)},
+                    {'role': 'assistant',
+                     'content': f'<|ANSWER|>{d.get("label")}<|ANSWER|>.'}
                 ],
-                'answer': d.get('label')
+                'answer': d.get('label').split(',')
             }
-            res.append(p)
-    return res
+            prt.append(p)
+    return prt
 
-def get_prompt_test_val(
-    data: dict,
-    labels: set,
-    system_prompt: str
-) -> tuple[list[dict], list[dict]]:
-    res_val = []
-    res_test = []
-    for k,v in data.items():
-        res_val.extend(
-            get_prompt(v.get('validation'), k, labels, system_prompt)
-        )
-        res_test.extend(
-            get_prompt(v.get('test'), k, labels, system_prompt)
-        )
-    return res_val, res_test
-
-def get_prompt_train_sample(
-    data: dict,
+def get_prt_val_test(
+    data: list[dict],
+    names: str,
     labels: set,
     system_prompt: str
 ) -> list[dict]:
-    """Format the data into a prompt template
-
-    Args:
-        data (dict): all the data for the task
-
-    Returns:
-        list[dict]: list containing the prompt templates
-    """
-    res = []
-    for k,v in data.items():
-        for val in v:
-            if isinstance(val.get('label'), list):
-                for i in val.get('label'):
-                    d = {
-                        'datasets': k,
-                        'prompt': [
-                            {'role': 'system', 'content': system_prompt},
-                            {'role': 'user',
-                             'content': format_user_prompt(val, labels)},
-                            {'role': 'assistant', 'content': 
-                                f'<|ANSWER|>{i}<|ANSWER|>.'}
-                        ],
-                        'answer': i
-                    }
-                    res.append(d)
-            else:
-                d = {
-                    'datasets': k,
+    prt = []
+    for d in data:
+        if isinstance(d.get('label'), list):
+            for i in d.get('label'):
+                p = {
+                    'datasets': names,
                     'prompt': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
-                         'content': format_user_prompt(val, labels)},
-                        {'role': 'assistant', 'content': 
-                            f'<|ANSWER|>{val.get("label")}<|ANSWER|>.'}
+                         'content': format_user_prompt(d, labels)},
                     ],
-                    'answer': val.get('label')
+                    'answer': d.get('label')
                 }
-                res.append(d)
-    return res
+                prt.append(p)
+        else:
+            p = {
+                'datasets': names,
+                'prompt': [
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': format_user_prompt(d, labels)},
+                ],
+                'answer': d.get('label').split(',')
+            }
+            prt.append(p)
+    return prt
+
+def get_prt(data: dict, labels: set, sys_prt: str):
+    prt_train = []
+    prt_val = []
+    prt_test = []
+    for k,v in data.items():
+        prt_train.extend(get_prt_train(v.get('train'), k, labels, sys_prt))
+        prt_val.extend(
+            get_prt_val_test(
+                data=v.get('validation'),
+                names=k,
+                labels=labels,
+                system_prompt=sys_prt
+            )
+        )
+        prt_test.extend(get_prt_val_test(v.get('test'), k, labels, sys_prt))
+    data_train = pd.DataFrame().from_records(prt_train)
+    data_val = pd.DataFrame().from_records(prt_val)
+    data_test = pd.DataFrame().from_records(prt_test)
+    return data_train, data_val, data_test
