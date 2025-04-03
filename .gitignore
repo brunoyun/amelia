@@ -24,5 +24,5 @@ target/
 
 unsloth_compiled_cache/
 outputs/
-
-*.csv
+img/
+test_res/

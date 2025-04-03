@@ -11,11 +11,16 @@ def fix_labels_mafalda(d: dict) -> dict:
     'nothing' -> 'none', 'appeal to (false) authority' -> 'appeal to authority'
     and remove the labels with less than 10 elements 
 
-    Args:
-        d (dict): { 'sentences': '...', 'label': [ ... ] }
+    Parameters
+    ----------
+    d : dict
+        dictionary containing the sentence and the associated labels: 
+        { 'sentences': '...', 'label': [ ... ] }
 
-    Returns:
-        dict: dictionnary with the changed labels
+    Returns
+    -------
+    dict
+        dictionary with the changed labels
     """
     lbl_to_remove = [
         'appeal to anger',
@@ -41,25 +46,34 @@ def fix_labels_mafalda(d: dict) -> dict:
 def get_parent_comment(comments: list[dict], id: str) -> str:
     """Get the parent comment by id
 
-    Args:
-        comments (list[dict]): list of comment
-        id (str): id of the parent comment
+    Parameters
+    ----------
+    comments : list[dict]
+        list of the different comments
+    id : str
+        id of the parent comment
 
-    Returns:
-        str: text of the comment
+    Returns
+    -------
+    str
+        text of the parent comment
     """
     for i in comments:
         if i.get('id') == id:
             return i.get('comment')
 
 def get_lbl_cocolofa(lst_s: list[dict]) -> set:
-    """Get all the fallacy labels of the cocolofa Dataset
+    """Get the labels of the CoCoLoFa dataset
 
-    Args:
-        lst_s (list[dict]): all element of the dataset
+    Parameters
+    ----------
+    lst_s : list[dict]
+        all element of the dataset
 
-    Returns:
-        set: all the label present in the dataset
+    Returns
+    -------
+    set
+        set of labels in the CoCoLoFa dataset
     """
     lbl_cocolofa = set()
     for s in lst_s:
@@ -67,13 +81,17 @@ def get_lbl_cocolofa(lst_s: list[dict]) -> set:
     return lbl_cocolofa
 
 def get_lbl_mafalda(lst_s: list[dict]) -> set:
-    """Get the labels of the Mafalda Dataset
+    """Get the labels of the MAFALDA dataset
 
-    Args:
-        lst_s (list[dict]): all element of the dataset
+    Parameters
+    ----------
+    lst_s : list[dict]
+        all element of the dataset
 
-    Returns:
-        set: all the label present in the dataset
+    Returns
+    -------
+    set
+        set of labels in the MAFALDA dataset
     """
     lbl_mafalda = set()
     for s in lst_s:
@@ -82,20 +100,63 @@ def get_lbl_mafalda(lst_s: list[dict]) -> set:
     return lbl_mafalda
 
 def get_all_labels(data: dict) -> set:
+    """Get all the labels
+
+    Parameters
+    ----------
+    data : dict
+        all the data
+
+    Returns
+    -------
+    set
+        set of labels of the data
+    """
     labels = set()
     for k,v in data.items():
         labels = labels.union(v.get('list_label'))
     return labels
 
+def get_lbls_inter(data: dict) -> set:
+    """Get the labels present in all the different dataset
+
+    Parameters
+    ----------
+    data : dict
+        all the data
+
+    Returns
+    -------
+    set
+        set of labels present in all the different dataset
+    """
+    tmp = []
+    labels = set()
+    for k,v in data.items():
+        tmp.append(v.get('list_label'))
+    for i in tmp:
+        if labels == set():
+            for j in i:
+                labels.add(j)
+        else:
+            labels.intersection(i)
+    print(len(labels))
+    return labels
+
 def get_nb_element_by_class(lbls: set[str], data: list[dict]) -> dict:
     """Get the number of element of each class
 
-    Args:
-        lbls (set[str]): labels of each file
-        data (list[dict]): data
+    Parameters
+    ----------
+    lbls : set[str]
+        set of labels of the data
+    data : list[dict]
+        data 
 
-    Returns:
-        dict: { name of the class : number of element of that class }
+    Returns
+    -------
+    dict
+        dictionary containing the number of element per class
     """
     res = {}
     for l in lbls:
@@ -110,17 +171,28 @@ def get_train_val_test_split(
     lbls: set[str],
     val_size=0.2,
     test_size=0.2
-) -> tuple[list[dict], list[dict]]:
-    """Separate the data into train and test splits
+) -> tuple[list[dict], list[dict], list[dict]]:
+    """Separate the data into 3 distincts split
 
-    Args:
-        data (list[dict]): all data
-        lbls (set[str]): all the label
-        val_size (float, optional): percentage of the data to use for the validation split (value between 0.0 and 1.0). Defaults to 0.2.
-        test_size (float, optional): percentage of the data to use for the test split (value between 0.0 and 1.0). Defaults to 0.2.
+    Parameters
+    ----------
+    data : list[dict]
+        data to split
+    lbls : set[str]
+        set of labels of the data
+    val_size : float, optional
+        ratio of the data to use for the validation split, by default 0.2
+    test_size : float, optional
+        ratio of the data to user for the test split, by default 0.2
 
-    Returns:
-        tuple[list[dict], list[dict]]: train_split, test_split
+    Returns
+    -------
+    list[dict]
+        train split
+    list[dict]
+        validation split
+    list[dict]
+        test split
     """
     test_sample = []
     validation_sample = []
@@ -145,14 +217,23 @@ def get_train_val_test_split(
     return train_sample, validation_sample, test_sample
 
 def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
-    """Load the CoCoLoFa dataset from file
+    """Load the CoCoLoFa dataset
 
-    Args:
-        path (str, optional): path to the jsonl file. Defaults to './Data_jsonl/cocolofa.jsonl'.
+    Parameters
+    ----------
+    path : str, optional
+        paht to the CoCoLoFa jsonl file, by default './Data_jsonl/cocolofa.jsonl'
 
-    Returns:
-        dict: dictionary containing the data of the dataset :
-        { 'train': train_split, 'test': test_split, 'list_label': all label of the dataset }
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets (train, validation, test):
+        {
+            'train': train_data_split,
+            'val': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
     """
     all_data = []
     sentences = []
@@ -191,14 +272,23 @@ def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
     return res
 
 def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
-    """Load the MAFALDA dataset from file
+    """Load the MAFALDA dataset
 
-    Args:
-        path (str, optional): path to the jsonl file. Defaults to './Data_jsonl/mafalda.jsonl'.
+    Parameters
+    ----------
+    path : str, optional
+        path to the MAFALDA jsonl file, by default './Data_jsonl/mafalda.jsonl'
 
-    Returns:
-        dict: dictionary containing the data of the dataset :
-        { 'train': train_split, 'test': test_split, 'list_label': all label of the dataset }
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets (train, validation, test):
+        {
+            'train': train_data_split,
+            'val': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
     """
     all_data = []
     sentences = []
@@ -230,27 +320,52 @@ def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
     }
     return res
 
-def load_all_dataset(paths: dict) -> dict:
+def load_all_dataset(paths: dict) -> tuple[dict, set]:
     """Load all datasets specified in the paths dictionary
 
-    Args:
-        paths (dict): {
-            'name of the dataset': 'path to jsonl file of the dataset'
-        }
+    Parameters
+    ----------
+    paths : dict
+        dictionary under the format { 'name_dataset': path to jsonl file of the dataset }
 
-    Returns:
-        dict: dictionary containing all the data
+    Returns
+    -------
+    dict
+        dictionary containing the data of each dataset under the following format: 
+        {
+            name_data : { 
+                'train': ...,
+                'val': ..., 
+                'test': ..., 
+                'list_label': set of label of the data 
+            } 
+        }
+    set
+        set of labels of the data
     """
     res = {
         'cocolofa': load_cocolofa(paths.get('cocolofa')),
         'mafalda': load_mafalfa(paths.get('mafalda'))
     }
     labels = get_all_labels(res)
+    # labels = get_lbls_inter(res)
     return res, labels
 
 ### Sampling Function ###
 
-def get_nb_element(labels: list[str]):
+def get_nb_element(labels: list[str]) -> pd.Series:
+    """Get the number of elements per labels
+
+    Parameters
+    ----------
+    labels : list[str]
+        list of labels
+
+    Returns
+    -------
+    Series
+        Series containing the number of element per labels
+    """
     labels = list(itertools.chain.from_iterable(labels))
     df = pd.DataFrame(labels)
     return df.value_counts()
@@ -261,8 +376,31 @@ def get_spl_datasets(
     labels: set,
     n_sample: int,
     nb_element: pd.Series
-):
-    oversampled_labels = {}
+) -> tuple[pd.DataFrame, dict, dict]:
+    """Get the sample of one dataset
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        data of one dataset
+    labels : set
+        set of labels in the data
+    n_sample : int
+        number of element to sample
+    nb_element : pd.Series
+        number of element to sample per labels
+
+    Returns
+    -------
+    DataFrame
+        DataFrame containing the sampled data from the dataset
+    dict
+        dictionary containing the number of sampled element of the dataset
+    dict
+        dictionary containing the number of oversampled element of the dataset
+    """
+    oversampled_len_lbls = {}
+    sple_len_lbls = {}
     spl_lst = []
     for l in labels:
         # print(l)
@@ -277,44 +415,79 @@ def get_spl_datasets(
         n_sample_label = int(
             np.round(len(df_tmp) / (nb_element.loc[l].iloc[0]) * n_sample)
         )
-        oversampled_labels.update({l: 0})
+        oversampled_len_lbls.update({l: 0})
+        sple_len_lbls.update({l: n_sample_label})
         try:
             df_spl = df_tmp.sample(n=n_sample_label)
         except ValueError:
             df_spl = df_tmp.sample(n=n_sample_label, replace=True)
-            oversampled_labels.update({l: int(n_sample_label - len(df_tmp))})
+            oversampled_len_lbls.update({l: int(n_sample_label - len(df_tmp))})
+            sple_len_lbls.update({l: len(df_tmp)})
         spl_lst.append(df_spl)
     df_spl = pd.concat(spl_lst)
-    return df_spl, oversampled_labels
+    return df_spl, sple_len_lbls, oversampled_len_lbls
 
 def get_spl(
     data: pd.DataFrame,
     labels: set,
     n_sample: int = 300
-):
+) -> tuple[pd.DataFrame, dict, dict]:
+    """Get a sample of the data
+
+    Parameters
+    ----------
+    data : DataFrame
+        data to sample
+    labels : set
+        set of labels in the data
+    n_sample : int, optional
+        number of element to sample in the data, by default 300
+
+    Returns
+    -------
+    DataFrame
+        DataFrame containing the sampled data
+    dict
+        dictionary containing the number of sample per labels
+    dict
+        dictionary containing the number of oversampled element per labels
+    """
     lst_spl = []
-    oversampled_label = {}
+    oversampled_len_lbls = {}
+    sple_len_lbls = {}
     nb_spl = int(n_sample / len(labels))
     nb_element = get_nb_element(data['answer'].to_list())
     names_dataset = data['datasets'].value_counts().index.to_list()
     for n in names_dataset:
         df = data.loc[data['datasets'] == n]
-        df_spl, oversample = get_spl_datasets(df, labels, nb_spl, nb_element)
-        oversampled_label.update({n: oversample})
+        df_spl, spl_len, oversample = get_spl_datasets(
+            data=df,
+            labels=labels,
+            n_sample=nb_spl,
+            nb_element=nb_element
+        )
+        oversampled_len_lbls.update({n: oversample})
+        sple_len_lbls.update({n: spl_len})
         lst_spl.append(df_spl)
     df_res = pd.concat(lst_spl)
-    return df_res, oversampled_label
+    return df_res, sple_len_lbls ,oversampled_len_lbls
 
 ### Prompting Function ###
 
 def format_user_prompt(d: dict, labels: set) -> str:
     """Format the user prompt
 
-    Args:
-        d (dict): Element of the data to format
+    Parameters
+    ----------
+    d : dict
+        Element of the data to format
+    labels : set
+        set of labels of the data
 
-    Returns:
-        str: String representation of the element to use in the prompt
+    Returns
+    -------
+    str
+        user prompt
     """
     user_prt = ''
     title = 'unknown'
@@ -335,6 +508,24 @@ def get_prt_train(
     labels: set,
     system_prompt: str
 ) -> list[dict]:
+    """Get the prompts for the train split
+
+    Parameters
+    ----------
+    data : list[dict]
+        data of the train split
+    names : str
+        name of the dataset
+    labels : set
+        set of label in the data
+    system_prompt : str
+        system prompt for the task
+
+    Returns
+    -------
+    list[dict]
+        list of prompts for the train split
+    """
     prt = []
     for d in data:
         if isinstance(d.get('label'), list):
@@ -371,6 +562,24 @@ def get_prt_val_test(
     labels: set,
     system_prompt: str
 ) -> list[dict]:
+    """Get the prompts for the validation and test splits
+
+    Parameters
+    ----------
+    data : list[dict]
+        data of the split
+    names : str
+        name of the datasets
+    labels : set
+        set of labels in the data
+    system_prompt : str
+        system prompt for the task
+
+    Returns
+    -------
+    list[dict]
+        list prompts for the split
+    """
     prt = []
     for d in data:
         if isinstance(d.get('label'), list):
@@ -397,7 +606,40 @@ def get_prt_val_test(
             prt.append(p)
     return prt
 
-def get_prt(data: dict, labels: set, sys_prt: str):
+def get_prt(
+    data: dict,
+    labels: set,
+    sys_prt: str
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Get the prompt of each data split
+
+    Parameters
+    ----------
+    data : dict
+        dictionary containing the different split of the data under the 
+        following format:
+        {
+            name_data : { 
+                'train': ...,
+                'val': ..., 
+                'test': ..., 
+                'list_label': set of label of the data 
+            } 
+        }
+    labels : set
+        set of labels present in the data
+    sys_prt : str
+        System prompt to use for the task
+
+    Returns
+    -------
+    DataFrame
+        prompts of the train split
+    DataFrame
+        prompt of the validation split
+    DataFrame
+        prompt of the test split
+    """
     prt_train = []
     prt_val = []
     prt_test = []
