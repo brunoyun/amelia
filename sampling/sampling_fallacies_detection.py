@@ -410,7 +410,7 @@ def get_spl_datasets(
             axis=1
         ).dropna()
         # print(df_tmp['prompt'].value_counts().values)
-        df_tmp = df_tmp.drop_duplicates(subset=['prompt'])
+        df_tmp_no_dup = df_tmp.drop_duplicates(subset=['prompt'])
         # print(df_tmp['prompt'].value_counts().values)
         n_sample_label = int(
             np.round(len(df_tmp) / (nb_element.loc[l].iloc[0]) * n_sample)
@@ -418,11 +418,13 @@ def get_spl_datasets(
         oversampled_len_lbls.update({l: 0})
         sple_len_lbls.update({l: n_sample_label})
         try:
-            df_spl = df_tmp.sample(n=n_sample_label)
+            df_spl = df_tmp_no_dup.sample(n=n_sample_label)
         except ValueError:
-            df_spl = df_tmp.sample(n=n_sample_label, replace=True)
-            oversampled_len_lbls.update({l: int(n_sample_label - len(df_tmp))})
-            sple_len_lbls.update({l: len(df_tmp)})
+            df_spl = df_tmp_no_dup.sample(n=n_sample_label, replace=True)
+            oversampled_len_lbls.update({
+                l: int(n_sample_label - len(df_tmp_no_dup))
+            })
+            sple_len_lbls.update({l: len(df_tmp_no_dup)})
         spl_lst.append(df_spl)
     df_spl = pd.concat(spl_lst)
     return df_spl, sple_len_lbls, oversampled_len_lbls
