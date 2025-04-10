@@ -62,42 +62,13 @@ def get_parent_comment(comments: list[dict], id: str) -> str:
         if i.get('id') == id:
             return i.get('comment')
 
-def get_lbl_cocolofa(lst_s: list[dict]) -> set:
-    """Get the labels of the CoCoLoFa dataset
-
-    Parameters
-    ----------
-    lst_s : list[dict]
-        all element of the dataset
-
-    Returns
-    -------
-    set
-        set of labels in the CoCoLoFa dataset
-    """
-    lbl_cocolofa = set()
-    for s in lst_s:
-        lbl_cocolofa.add(s.get('label'))
-    return lbl_cocolofa
-
-def get_lbl_mafalda(lst_s: list[dict]) -> set:
-    """Get the labels of the MAFALDA dataset
-
-    Parameters
-    ----------
-    lst_s : list[dict]
-        all element of the dataset
-
-    Returns
-    -------
-    set
-        set of labels in the MAFALDA dataset
-    """
-    lbl_mafalda = set()
-    for s in lst_s:
-        for i in s.get('label'):
-            lbl_mafalda.add(i)
-    return lbl_mafalda
+def get_labels(lst_s: list[dict]) -> set:
+    lbl = [
+        i
+        for s in lst_s
+        for i in s.get('label')
+    ]
+    return set(lbl)
 
 def get_all_labels(data: dict) -> set:
     """Get all the labels
@@ -230,7 +201,7 @@ def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
         dictionary containing the data split into 3 sets (train, validation, test):
         {
             'train': train_data_split,
-            'val': val_data_split,
+            'validation': val_data_split,
             'test': test_data_split,
             'list_label': label of the dataset
         }
@@ -254,11 +225,11 @@ def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
                 'id': j.get('id'),
                 'respond_to': parent_comment,
                 'title': i.get('title'),
-                'label': j.get('fallacy'),
+                'label': j.get('fallacy').split(','),
                 'sentences': j.get('comment'),
             })
             sentences.append(tmp)
-    lbls_cocolofa = get_lbl_cocolofa(sentences)
+    lbls_cocolofa = get_labels(sentences)
     train_set, validation_set, test_set = get_train_val_test_split(
         data=sentences,
         lbls=lbls_cocolofa
@@ -285,7 +256,7 @@ def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
         dictionary containing the data split into 3 sets (train, validation, test):
         {
             'train': train_data_split,
-            'val': val_data_split,
+            'validation': val_data_split,
             'test': test_data_split,
             'list_label': label of the dataset
         }
@@ -307,7 +278,7 @@ def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
                         'text': i.get('text')
                     })
                     sentences.append(tmp)
-    lbls_mafalda = get_lbl_mafalda(sentences)
+    lbls_mafalda = get_labels(sentences)
     train_set, validation_set, test_set = get_train_val_test_split(
         data=sentences,
         lbls=lbls_mafalda
@@ -367,9 +338,46 @@ def get_nb_element(labels: list[str]) -> pd.Series:
         Series containing the number of element per labels
     """
     labels = list(itertools.chain.from_iterable(labels))
-    df = pd.DataFrame(labels)
-    return df.value_counts()
-    
+    c_val = pd.DataFrame(labels).value_counts()
+    c_val = c_val.rename_axis(None, axis=0)
+    idx=[i[0] for i in c_val.index]
+    c_val = pd.Series(c_val.values, index=idx).sort_index()
+    return c_val
+
+def get_nb_element_split(
+    data: list[str],
+    nb_element: pd.Series,
+) -> pd.Series:
+    df = pd.DataFrame(data)
+    df_elmt = get_nb_element(
+        df['label'].apply(
+            lambda x: x if isinstance(x, list) else x.split(',')
+        )
+    )
+    nb_element = (nb_element + df_elmt).fillna(df_elmt).fillna(nb_element)
+    return nb_element
+
+def get_nb_element_all_split(
+    data: dict, 
+    labels: set
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    nb_elmt_train = pd.Series(0, index=labels).sort_index()
+    nb_elmt_val = pd.Series(0, index=labels).sort_index()
+    nb_elmt_test = pd.Series(0, index=labels).sort_index()
+    for k,v in data.items():
+        nb_elmt_train = get_nb_element_split(
+            data=v.get('train'),
+            nb_element=nb_elmt_train,
+        )
+        nb_elmt_val = get_nb_element_split(
+            data=v.get('validation'),
+            nb_element=nb_elmt_val,
+        )
+        nb_elmt_test = get_nb_element_split(
+            data=v.get('test'),
+            nb_element=nb_elmt_test,
+        )
+    return nb_elmt_train, nb_elmt_val, nb_elmt_test
 
 def get_spl_datasets(
     data: pd.DataFrame,
@@ -399,35 +407,40 @@ def get_spl_datasets(
     dict
         dictionary containing the number of oversampled element of the dataset
     """
-    oversampled_len_lbls = {}
-    sple_len_lbls = {}
+    # oversampled_len_lbls = {}
+    # sple_len_lbls = {}
     spl_lst = []
     for l in labels:
-        # print(l)
         df_tmp = data.apply(
-            lambda x: x if l in x['answer'] else np.nan,
+            lambda x: x if l in x['label'] else np.nan,
             result_type='broadcast',
             axis=1
         ).dropna()
-        # print(df_tmp['prompt'].value_counts().values)
-        df_tmp_no_dup = df_tmp.drop_duplicates(subset=['prompt'])
-        # print(df_tmp['prompt'].value_counts().values)
         n_sample_label = int(
-            np.round(len(df_tmp) / (nb_element.loc[l].iloc[0]) * n_sample)
+            np.round(len(df_tmp) / (nb_element.loc[l]) * n_sample)
         )
-        oversampled_len_lbls.update({l: 0})
-        sple_len_lbls.update({l: n_sample_label})
-        try:
-            df_spl = df_tmp_no_dup.sample(n=n_sample_label)
-        except ValueError:
-            df_spl = df_tmp_no_dup.sample(n=n_sample_label, replace=True)
-            oversampled_len_lbls.update({
-                l: int(n_sample_label - len(df_tmp_no_dup))
-            })
-            sple_len_lbls.update({l: len(df_tmp_no_dup)})
+        if (len(df_tmp) - n_sample_label) >= 0:
+            df_spl = df_tmp.sample(n=n_sample_label)
+            df_over = df_tmp.sample(n=0)
+            df_spl['spl'] = 'sample'
+            # oversampled_len_lbls.update({l: 0})
+            # sple_len_lbls.update({l: n_sample_label})
+        else:
+            df_spl = df_tmp.sample(n=len(df_tmp))
+            df_over = df_tmp.sample(
+                n=n_sample_label - len(df_tmp),
+                replace=True
+            )
+            df_spl['spl'] = 'sample'
+            df_over['spl'] = 'oversample'
+            # oversampled_len_lbls.update({
+            #     l: int(n_sample_label - len(df_tmp))
+            # })
+            # sple_len_lbls.update({l: len(df_tmp)})
         spl_lst.append(df_spl)
+        spl_lst.append(df_over)
     df_spl = pd.concat(spl_lst)
-    return df_spl, sple_len_lbls, oversampled_len_lbls
+    return df_spl #, sple_len_lbls, oversampled_len_lbls
 
 def get_spl(
     data: pd.DataFrame,
@@ -474,6 +487,69 @@ def get_spl(
     df_res = pd.concat(lst_spl)
     return df_res, sple_len_lbls ,oversampled_len_lbls
 
+def get_all_spl(
+    data: dict,
+    labels: set,
+    n_sample: int=300,
+    val_size: float=0.2,
+    test_size: float=0.2
+) -> dict:
+    res = {}
+    lst_spl_train, lst_spl_val, lst_spl_test = [], [], []
+    len_overspl_train, len_overspl_val, len_overspl_test = {}, {}, {}
+    len_spl_train, len_spl_val, len_spl_test = {}, {}, {}
+    nb_elmt_train, nb_elmt_val, nb_elmt_test = get_nb_element_all_split(
+        data=data,
+        labels=labels
+    )
+    nb_spl_tr = int(n_sample / len(labels))
+    nb_spl_val = int((n_sample*val_size) / len(labels))
+    nb_spl_test = int((n_sample*test_size) / len(labels))
+    for k,v in data.items():
+        # spl_train, spl_len_tr, overspl_tr = get_spl_datasets(
+        spl_train = get_spl_datasets(
+            data=pd.DataFrame(v.get('train')),
+            labels=labels,
+            n_sample=nb_spl_tr,
+            nb_element=nb_elmt_train,
+        )
+        # spl_val, spl_len_val, overspl_val = get_spl_datasets(
+        spl_val = get_spl_datasets(
+            data=pd.DataFrame(v.get('validation')),
+            labels=labels,
+            n_sample=nb_spl_val,
+            nb_element=nb_elmt_val,
+        )
+        # spl_test, spl_len_test, overspl_test = get_spl_datasets(
+        spl_test = get_spl_datasets(
+            data=pd.DataFrame(v.get('test')),
+            labels=labels,
+            n_sample=nb_spl_test,
+            nb_element=nb_elmt_test,
+        )
+        lst_spl_train.append(spl_train)
+        lst_spl_val.append(spl_val)
+        lst_spl_test.append(spl_test)
+        res.update({
+            k: {
+                'train': spl_train.to_dict(orient='records'),
+                'validation': spl_val.to_dict(orient='records'),
+                'test': spl_test.to_dict(orient='records')
+            }
+        })
+    #     len_overspl_train.update({k: overspl_tr})
+    #     len_overspl_val.update({k: overspl_val})
+    #     len_overspl_test.update({k: overspl_test})
+    #     len_spl_train.update({k: spl_len_tr})
+    #     len_spl_val.update({k: spl_len_val})
+    #     len_spl_test.update({k: spl_len_test})
+    # stat_spl = {
+    #     'train': (len_spl_train, len_overspl_train),
+    #     'validation': (len_spl_val, len_overspl_val),
+    #     'test': (len_spl_test, len_overspl_test)
+    # }
+    return res # , stat_spl
+
 ### Prompting Function ###
 
 def format_user_prompt(d: dict, labels: set) -> str:
@@ -504,7 +580,7 @@ def format_user_prompt(d: dict, labels: set) -> str:
     user_prt = f'[FALLACY]: {labels}\n[TITLE]: {title}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-def get_prt_train(
+def get_prt_train_val(
     data: list[dict],
     names: str,
     labels: set,
@@ -534,6 +610,8 @@ def get_prt_train(
             for i in d.get('label'):
                 p = {
                     'datasets': names,
+                    'spl': d.get('spl'),
+                    'single_ans': i,
                     'prompt': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
@@ -547,6 +625,8 @@ def get_prt_train(
         else:
             p = {
                 'datasets': names,
+                'spl': d.get('spl'),
+                'single_ans': d.get('label'),
                 'prompt': [
                     {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': format_user_prompt(d, labels)},
@@ -558,7 +638,7 @@ def get_prt_train(
             prt.append(p)
     return prt
 
-def get_prt_val_test(
+def get_prt_test(
     data: list[dict],
     names: str,
     labels: set,
@@ -588,6 +668,8 @@ def get_prt_val_test(
             for i in d.get('label'):
                 p = {
                     'datasets': names,
+                    'spl': d.get('spl'),
+                    'single_ans': i,
                     'prompt': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
@@ -599,6 +681,8 @@ def get_prt_val_test(
         else:
             p = {
                 'datasets': names,
+                'spl': d.get('spl'),
+                'single_ans': d.get('label'),
                 'prompt': [
                     {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': format_user_prompt(d, labels)},
@@ -646,16 +730,16 @@ def get_prt(
     prt_val = []
     prt_test = []
     for k,v in data.items():
-        prt_train.extend(get_prt_train(v.get('train'), k, labels, sys_prt))
+        prt_train.extend(get_prt_train_val(v.get('train'), k, labels, sys_prt))
         prt_val.extend(
-            get_prt_val_test(
+            get_prt_train_val(
                 data=v.get('validation'),
                 names=k,
                 labels=labels,
                 system_prompt=sys_prt
             )
         )
-        prt_test.extend(get_prt_val_test(v.get('test'), k, labels, sys_prt))
+        prt_test.extend(get_prt_test(v.get('test'), k, labels, sys_prt))
     data_train = pd.DataFrame().from_records(prt_train)
     data_val = pd.DataFrame().from_records(prt_val)
     data_test = pd.DataFrame().from_records(prt_test)
