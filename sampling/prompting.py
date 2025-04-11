@@ -1,3 +1,4 @@
+from datasets import Dataset
 import pandas as pd
 
 def formatting_prompt(tokenizer, data: dict):
@@ -119,6 +120,7 @@ def get_prt_test(
     return prt
 
 def get_prt(
+    format_user_prompt,
     data: dict,
     labels: set,
     sys_prt: str
@@ -156,17 +158,54 @@ def get_prt(
     prt_val = []
     prt_test = []
     for k,v in data.items():
-        prt_train.extend(get_prt_train_val(v.get('train'), k, labels, sys_prt))
+        prt_train.extend(
+            get_prt_train_val(
+                format_user_prompt,
+                data=v.get('train'),
+                names=k,
+                labels=labels, 
+                system_prompt=sys_prt
+            )
+        )
         prt_val.extend(
             get_prt_train_val(
+                format_user_prompt,
                 data=v.get('validation'),
                 names=k,
                 labels=labels,
                 system_prompt=sys_prt
             )
         )
-        prt_test.extend(get_prt_test(v.get('test'), k, labels, sys_prt))
+        prt_test.extend(
+            get_prt_test(
+                format_user_prompt,
+                data=v.get('test'),
+                names=k,
+                labels=labels,
+                system_prompt=sys_prt
+            )
+        )
     data_train = pd.DataFrame().from_records(prt_train)
     data_val = pd.DataFrame().from_records(prt_val)
     data_test = pd.DataFrame().from_records(prt_test)
+    return data_train, data_val, data_test
+
+def get_datasets(
+    tokenizer,
+    train:pd.DataFrame,
+    val:pd.DataFrame,
+    test:pd.DataFrame
+)->tuple[Dataset, Dataset, Dataset]:
+    data_train = Dataset.from_pandas(train).map(
+        lambda x: formatting_prompt(tokenizer, x),
+        batched=True
+    )
+    data_val = Dataset.from_pandas(val).map(
+        lambda x: formatting_prompt(tokenizer, x),
+        batched=True
+    )
+    data_test = Dataset.from_pandas(test).map(
+        lambda x: formatting_prompt(tokenizer, x),
+        batched=True
+    ).shuffle(seed=0)
     return data_train, data_val, data_test

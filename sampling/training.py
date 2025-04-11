@@ -40,7 +40,7 @@ def zero_shot_gen(
     res= []
     prompt = data['prompt']
     for prt in prompt:
-        out = gen(prt, model, text_streamer)
+        out = gen(prt, model, tokenizer, text_streamer)
         decoded_out = tokenizer.batch_decode(out)
         pred = format_output(decoded_out, labels)
         res.append(pred)
@@ -73,12 +73,13 @@ def train(
     )
     unsloth_train(trainer)
     
-def test(model, tokenizer, data_test, labels, result_file) -> pd.Dataframe:
+def test(model, tokenizer, data_test, labels, result_file) -> pd.DataFrame:
     FastLanguageModel.for_inference(model)
     text_streamer = TextStreamer(tokenizer)
     pred = zero_shot_gen(
         data=data_test,
         model=model,
+        tokenizer=tokenizer,
         labels=labels,
         text_streamer=text_streamer
     )

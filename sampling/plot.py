@@ -77,7 +77,6 @@ def plot_stat_sample(
         fig.savefig(savefile, format='png')
 
 def plot_metric(
-    change_lbl,
     metric: dict,
     columns: list[str]=['f1', 'precision', 'recall'],
     title='',
