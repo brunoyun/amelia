@@ -110,7 +110,7 @@ def config_fallacies(
     save_result:bool,
     do_sample:bool,
 ) -> dict:
-    m_name = model_name.split(',')[1]
+    m_name = model_name.split('/')[1]
     task_name = 'fallacies'
     train_resp = '_train_resp'
     n_eval_step = np.floor((n_sample/32)/n_eval)
@@ -128,7 +128,7 @@ def config_fallacies(
             epoch=epoch,
             train_resp=train_resp,
         )
-    print(f'#### Load Model and Tokenizer')
+    print(f'##### Load Model and Tokenizer #####')
     model, tokenizer, training_args = load_model(
         model_name=model_name,
         max_seq_length=max_seq_length,
