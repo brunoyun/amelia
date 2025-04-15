@@ -167,7 +167,7 @@ def config_aduc(
     save_result:bool,
     do_sample:bool,
 ) -> dict:
-    m_name = model_name.split(',')[1]
+    m_name = model_name.split('/')[1]
     task_name = 'aduc'
     train_resp = '_train_resp'
     n_eval_step = np.floor((n_sample/32)/n_eval)
@@ -213,11 +213,7 @@ def config_aduc(
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
-    config = {
-        'fallacies': config_fallacies(**conf.get('fallacies')),
-        'aduc': config_aduc(**conf.get('aduc'))
-    }
-    if task is not None and config.get(task) is not None:
-        return config.get(task)
-    else:
-        print(f'Error while getting the configuration')
+    if task == 'fallacies':
+        return config_fallacies(**conf.get('fallacies'))
+    if task == 'aduc':
+        return config_aduc(**conf.get('aduc'))
