@@ -1,0 +1,38 @@
+{
+    "fallacies": {
+        "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+        "max_seq_length": 2048,
+        "dtype": null,
+        "load_in_4bit": true,
+        "gpu_mem_use": 0.6,
+        "n_sample": 4000,
+        "epoch":2,
+        "n_eval": 8,
+        "paths": {
+            "cocolofa": "./Data_jsonl/cocolofa.jsonl",
+            "mafalda": "./Data_jsonl/mafalda.jsonl"
+        },
+        "system_prompt": "You are an expert in argumentation. Your task is to determine the type of fallacy in the given [SENTENCE]. The fallacy would be in the [FALLACY] Set. Utilize the [TITLE] and the [FULL TEXT] as context to support your decision.\nYour answer must be in the following format with only the fallacy in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+        "save_result": true,
+        "do_sample": true
+    },
+    "aduc": {
+        "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+        "max_seq_length": 2048,
+        "dtype": null,
+        "load_in_4bit": true,
+        "gpu_mem_use": 0.6,
+        "n_sample": 4000,
+        "epoch": 2,
+        "n_eval": 8,
+        "paths": {
+            "pe": "./Data_jsonl/perssuasive_essays.jsonl",
+            "abstrct": "./Data_jsonl/abstrct_neoplasm.jsonl",
+            "mtp1": "./Data_jsonl/microtext_p1.jsonl",
+            "mtp2": "./Data_jsonl/microtext_p2.jsonl"
+        },
+        "system_prompt": "You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is a Claim or a Premise. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Premise in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+        "save_result": true,
+        "do_sample": true
+    }
+}
