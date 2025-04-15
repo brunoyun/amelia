@@ -185,8 +185,6 @@ def get_spl_datasets(
     dict
         dictionary containing the number of oversampled element of the dataset
     """
-    # oversampled_len_lbls = {}
-    # sple_len_lbls = {}
     spl_lst = []
     for l in labels:
         df_tmp = data.apply(
@@ -201,8 +199,6 @@ def get_spl_datasets(
             df_spl = df_tmp.sample(n=n_sample_label)
             df_over = df_tmp.sample(n=0)
             df_spl['spl'] = 'sample'
-            # oversampled_len_lbls.update({l: 0})
-            # sple_len_lbls.update({l: n_sample_label})
         else:
             df_spl = df_tmp.sample(n=len(df_tmp))
             df_over = df_tmp.sample(
@@ -211,14 +207,10 @@ def get_spl_datasets(
             )
             df_spl['spl'] = 'sample'
             df_over['spl'] = 'oversample'
-            # oversampled_len_lbls.update({
-            #     l: int(n_sample_label - len(df_tmp))
-            # })
-            # sple_len_lbls.update({l: len(df_tmp)})
         spl_lst.append(df_spl)
         spl_lst.append(df_over)
     df_spl = pd.concat(spl_lst)
-    return df_spl #, sple_len_lbls, oversampled_len_lbls
+    return df_spl
 
 def get_spl(
     data: pd.DataFrame,
@@ -274,8 +266,6 @@ def get_all_spl(
 ) -> dict:
     res = {}
     lst_spl_train, lst_spl_val, lst_spl_test = [], [], []
-    len_overspl_train, len_overspl_val, len_overspl_test = {}, {}, {}
-    len_spl_train, len_spl_val, len_spl_test = {}, {}, {}
     nb_elmt_train, nb_elmt_val, nb_elmt_test = get_nb_element_all_split(
         data=data,
         labels=labels
@@ -284,21 +274,18 @@ def get_all_spl(
     nb_spl_val = int((n_sample*val_size) / len(labels))
     nb_spl_test = int((n_sample*test_size) / len(labels))
     for k,v in data.items():
-        # spl_train, spl_len_tr, overspl_tr = get_spl_datasets(
         spl_train = get_spl_datasets(
             data=pd.DataFrame(v.get('train')),
             labels=labels,
             n_sample=nb_spl_tr,
             nb_element=nb_elmt_train,
         )
-        # spl_val, spl_len_val, overspl_val = get_spl_datasets(
         spl_val = get_spl_datasets(
             data=pd.DataFrame(v.get('validation')),
             labels=labels,
             n_sample=nb_spl_val,
             nb_element=nb_elmt_val,
         )
-        # spl_test, spl_len_test, overspl_test = get_spl_datasets(
         spl_test = get_spl_datasets(
             data=pd.DataFrame(v.get('test')),
             labels=labels,
@@ -315,15 +302,4 @@ def get_all_spl(
                 'test': spl_test.to_dict(orient='records')
             }
         })
-    #     len_overspl_train.update({k: overspl_tr})
-    #     len_overspl_val.update({k: overspl_val})
-    #     len_overspl_test.update({k: overspl_test})
-    #     len_spl_train.update({k: spl_len_tr})
-    #     len_spl_val.update({k: spl_len_val})
-    #     len_spl_test.update({k: spl_len_test})
-    # stat_spl = {
-    #     'train': (len_spl_train, len_overspl_train),
-    #     'validation': (len_spl_val, len_overspl_val),
-    #     'test': (len_spl_test, len_overspl_test)
-    # }
-    return res # , stat_spl
+    return res

@@ -4,11 +4,18 @@ import random
 import pandas as pd
 import numpy as np
 
-import sampling as spl
+import src.sampling as spl
+import src.prompting as prt
+import src.training as tr
+import src.metrics as metrics
+import src.plot as plot
+
+from ast import literal_eval
 
 # The label 'Other' indicates that the edu/adu is neither a Claim or a Premises
-# TODO : Add the function for prompting when the file refactoring is done
 
+def change_lbl(labels: list) -> list:
+    return labels
 
 def get_mt(edu_lst: list[dict]) -> str:
     text = ''
@@ -45,51 +52,6 @@ def get_lbls(lst_s: list[dict]) -> set:
         for i in s.get('label')
     ]
     return set(lbls)
-
-'''
-# def get_all_labels(data: dict) -> set:
-#     labels = set()
-#     for k,v in data.items():
-#         labels = labels.union(v.get('list_label'))
-#     return labels
-
-# def get_nb_element_by_class(lbls: set, data: list[dict]) -> dict:
-#     res = {}
-#     for l in lbls:
-#         tmp = [
-#             x for x in data if l in x.get('label')
-#         ]
-#         res.update({l: len(tmp)})
-#     return res
-
-# def get_train_val_test_split(
-#     data: list[dict],
-#     lbls: set,
-#     val_size=0.2,
-#     test_size=0.2,
-# ) -> tuple[list[dict], list[dict], list[dict]]:
-#     test_sample = []
-#     validation_sample = []
-#     n_val = len(data)*val_size
-#     n_test = len(data)*test_size
-#     nb_elmt = get_nb_element_by_class(lbls, data)
-#     for l in lbls:
-#         ratio = nb_elmt.get(l) / sum(nb_elmt.values())
-#         n_sample_val = int(ratio*n_val)
-#         n_sample_test = int(ratio*n_test)
-#         tmp = [x for x in data if l in x.get('label')]
-#         sample_val = random.sample(tmp, n_sample_val)
-#         tmp = [x for x in tmp if x not in sample_val]
-#         sample_test = random.sample(tmp, n_sample_test)
-#         validation_sample.extend(sample_val)
-#         test_sample.extend(sample_test)
-#     validation_sample = random.sample(validation_sample, len(validation_sample))
-#     test_sample = random.sample(test_sample, len(test_sample))
-#     train_sample = [
-#         s for s in data if s not in test_sample and s not in validation_sample
-#     ]
-#     return train_sample, validation_sample, test_sample
-'''
 
 def load_pe(path:str='./Data_jsonl/perssuasive_essays.jsonl') -> dict:
     all_data = []
@@ -263,3 +225,108 @@ def load_all_datasets(paths: dict) -> tuple[dict, set]:
     }
     labels = spl.get_all_labels(res)
     return res, labels
+
+def format_user_prompt(d:dict, labels:set) -> str:
+    user_prt = ''
+    topic = 'unknown'
+    full_text = d.get('text')
+    sentences = d.get('sentences')
+    if 'topic' in d:
+        topic = d.get('topic')
+    user_prt = f'[TOPIC]: {topic}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
+    return user_prt
+
+def run_aduc(
+    model,
+    tokenizer,
+    training_args,
+    max_seq_length:int,
+    n_sample:int,
+    spl_name:str,
+    paths:dict,
+    sys_prt:str,
+    do_sample:bool,
+    savefile:dict
+):
+    print(f'##### Load Data #####')
+    if do_sample:
+        data, labels = load_all_datasets(paths)
+        spl_data = spl.get_all_spl(data, labels, n_sample)
+        prt_train, prt_val, prt_test = prt.get_prt(
+            format_user_prompt,
+            data=spl_data,
+            labels=labels,
+            sys_prt=sys_prt
+        )
+        prt_train.to_csv(savefile.get('train_spl_file'), index=False)
+        prt_val.to_csv(savefile.get('val_spl_file'), index=False)
+        prt_test.to_csv(savefile.get('test_spl_file'), index=False)
+    else:
+        converter = {'prompt': literal_eval, 'answer': literal_eval}
+        labels = set(
+            pd.read_csv(savefile.get('labels_file')['labels'].tolist())
+        )
+        prt_train = pd.read_csv(
+            savefile.get('train_spl_file'),
+            converters=converter
+        )
+        prt_val = pd.read_csv(
+            savefile.get('val_spl_file'),
+            converters=converter
+        )
+        prt_test = pd.read_csv(
+            savefile.get('test_spl_file'),
+            converters=converter
+        )
+    data_train, data_val, data_test = prt.get_datasets(
+        tokenizer=tokenizer,
+        train=prt_train,
+        val=prt_val,
+        test=prt_test
+    )
+    print(f'##### Training #####')
+    tr.train(
+        model=model,
+        tokenizer=tokenizer,
+        data_train=data_train,
+        data_val=data_val,
+        max_seq_length=max_seq_length,
+        training_args=training_args
+    )
+    print(f'##### Testing #####')
+    result_test = tr.test(
+        model=model,
+        tokenizer=tokenizer,
+        data_test=data_test,
+        labels=labels,
+        result_file=savefile.get('test_result_file')
+    )
+    print(f'##### Metrics and plot #####')
+    metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
+    plot.plot_stat_sample(
+        change_lbl,
+        sample=prt_train,
+        lst_labels=labels,
+        savefile=savefile.get('stat_train'),
+        title=f'aduc: sample {spl_name} train'
+    )
+    plot.plot_stat_sample(
+        change_lbl,
+        sample=prt_val,
+        lst_labels=labels,
+        savefile=savefile.get('stat_val'),
+        title=f'aduc: sample {spl_name} val'
+    )
+    plot.plot_stat_sample(
+        change_lbl,
+        sample=prt_test,
+        labels=labels,
+        savefile=savefile.get('stat_test'),
+        title=f'aduc: sample {spl_name} test'
+    )
+    plot.plot_metric(
+        metric=metric,
+        title=f'aduc: Scores {n_sample} sample',
+        file_plot=savefile.get('plot_single'),
+        file_metric=savefile.get('metric_single')
+    )

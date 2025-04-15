@@ -26,4 +26,4 @@ unsloth_compiled_cache/
 outputs/
 img/
 test_res/
-sampling/sample/
+sampled_data/

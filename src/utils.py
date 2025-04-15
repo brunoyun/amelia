@@ -13,9 +13,10 @@ def get_savefile(
     epoch:int,
     train_resp:str
 ) -> dict:
-    train_spl_file = f'./sampling/sample/{task_name}/{spl_name}_train.csv'
-    val_spl_file = f'./sampling/sample/{task_name}/{spl_name}_val.csv'
-    test_spl_file = f'./sampling/sample/{task_name}/{spl_name}_test.csv'
+    labels_file = f'./sampled_data/{task_name}/labels.csv'
+    train_spl_file = f'./sampled_data/{task_name}/{spl_name}_train.csv'
+    val_spl_file = f'./sampled_data/{task_name}/{spl_name}_val.csv'
+    test_spl_file = f'./sampled_data/{task_name}/{spl_name}_test.csv'
     test_result_file = f'./test_res/{task_name}/test_res_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}.csv'
     file_stat_train = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name} _stat_train.png'
     file_stat_val = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_val.png'
@@ -25,6 +26,7 @@ def get_savefile(
     file_metric_single = f'./test_res/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
     file_metric_multi = f'./test_res/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_multi.csv'
     d_file = {
+        'labels_file': labels_file,
         'train_spl_file': train_spl_file,
         'val_spl_file': val_spl_file,
         'test_spl_file': test_spl_file,
@@ -39,39 +41,16 @@ def get_savefile(
     }
     return d_file
 
-def config_fallacies(
+def load_model(
     model_name:str,
     max_seq_length:int,
     dtype,
     load_in_4bit:bool,
     gpu_mem_use:float,
-    n_sample:int,
-    epoch:int,
-    n_eval:int,
-    paths:dict,
-    system_prompt:str,
-    save_result:bool,
-    do_sample:bool,
-) -> dict:
-    m_name = model_name.split(',')[1]
-    task_name = 'fallacies'
-    train_resp = '_train_resp'
-    n_eval_step = np.floor((n_sample/32)/n_eval)
-    spl_name = 'spl2'
-    d_file = None
-    if do_sample:
-        spl_name = 'spl'
-    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
-    if save_result:
-        d_file = get_savefile(
-            task_name=task_name,
-            spl_name=spl_name,
-            m_name=m_name,
-            n_sample=n_sample,
-            epoch=epoch,
-            train_resp=train_resp,
-        )
-    print(f'#### Load Model and Tokenizer')
+    epoch:float,
+    outputs_dir:str,
+    n_eval_step:int,
+):
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
         max_seq_length=max_seq_length,
@@ -115,6 +94,51 @@ def config_fallacies(
         eval_strategy="steps",
         eval_steps=n_eval_step,
     )
+    return model, tokenizer, training_args
+
+def config_fallacies(
+    model_name:str,
+    max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
+    n_sample:int,
+    epoch:int,
+    n_eval:int,
+    paths:dict,
+    system_prompt:str,
+    save_result:bool,
+    do_sample:bool,
+) -> dict:
+    m_name = model_name.split(',')[1]
+    task_name = 'fallacies'
+    train_resp = '_train_resp'
+    n_eval_step = np.floor((n_sample/32)/n_eval)
+    spl_name = 'spl2'
+    d_file = None
+    if do_sample:
+        spl_name = 'spl'
+    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
+    if save_result:
+        d_file = get_savefile(
+            task_name=task_name,
+            spl_name=spl_name,
+            m_name=m_name,
+            n_sample=n_sample,
+            epoch=epoch,
+            train_resp=train_resp,
+        )
+    print(f'#### Load Model and Tokenizer')
+    model, tokenizer, training_args = load_model(
+        model_name=model_name,
+        max_seq_length=max_seq_length,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        gpu_mem_use=gpu_mem_use,
+        epoch=epoch,
+        outputs_dir=outputs_dir,
+        n_eval_step=n_eval_step
+    )
     config = {
         'model': model,
         'tokenizer': tokenizer,
@@ -130,7 +154,7 @@ def config_fallacies(
     return config
 
 def get_config(task:str=None)->dict:
-    with open('./sampling/config.json', 'r') as conf_file:
+    with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
     config = {
         'fallacies': config_fallacies(**conf.get('fallacies'))

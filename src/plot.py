@@ -35,8 +35,8 @@ def plot_stat_sample(
         }
         spl_len.update({name: len_s})
         spl_over.update({name: len_o})
-    df_spl_len = pd.DataFrame().from_dict(spl_len) # .sort_index()
-    df_oversample = pd.DataFrame().from_dict(spl_over) # .sort_index()
+    df_spl_len = pd.DataFrame().from_dict(spl_len)
+    df_oversample = pd.DataFrame().from_dict(spl_over)
     df_spl_len.index = change_lbl(df_spl_len.index)
     df_oversample.index = change_lbl(df_oversample.index)
     df_spl_len = df_spl_len.sort_index()
@@ -54,7 +54,6 @@ def plot_stat_sample(
         else:
             lbl = 'oversample'
         p = ax.bar(x, v[0][1], width, label=f'{lbl} {v[0][0]}', bottom=b)
-        # ax.bar_label(p, label_type='center')
         p = ax.bar(
             x=x,
             height=v[1][1],
@@ -62,16 +61,13 @@ def plot_stat_sample(
             label=f'{lbl} {v[1][0]}',
             bottom=b + v[0][1]
         )
-        # ax.bar_label(p, label_type='center')
         bar_label=False
         b = b + v[0][1] + v[1][1]
-    # ax.set_yticks(np.arange(0, max(df_spl_len.max().values) + 2, step=1))
     lst_labels = change_lbl(lst_labels)
     ax.set_xticks(x, sorted(lst_labels), rotation=90)
     ax.legend(loc='best')
     ax.set_title(title)
     fig.set_size_inches(20, 10)
-    # plt.ylim(0, max(df_spl_len.max().values) + 1)
     plt.show()
     if savefile is not None:
         fig.savefig(savefile, format='png')
@@ -83,7 +79,6 @@ def plot_metric(
     file_plot=None,
     file_metric=None,
 ):
-    # rand_mark = pd.Series(np.full((len(metric),), 1/(len(metric)-1)))
     df_metric = pd.DataFrame().from_dict(
         metric,
         orient='index',
@@ -96,8 +91,6 @@ def plot_metric(
         figsize=(20,14),
         title=title,
     )
-    # rand_mark.plot(ax=ax, color='red', linestyle='dashed')
-    # ax.set_yticks(np.arange(0, 1.1, step=0.05))
     plt.xticks(rotation=90)
     plt.show()
     if file_plot is not None:

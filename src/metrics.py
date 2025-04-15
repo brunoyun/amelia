@@ -97,7 +97,7 @@ def get_metrics_multi(change_lbl, data, labels):
     })
     return res
 
-def get_metrics(change_lbl, data:pd.DataFrame):
+def get_metrics(change_lbl, data:pd.DataFrame, is_multi_lbl:bool=True):
     data_single = data.apply(
         lambda x: x if len(x['lbl'])<=1 else np.nan,
         axis=1,
@@ -111,5 +111,8 @@ def get_metrics(change_lbl, data:pd.DataFrame):
     labels_single = data_single['lbl'].value_counts().index
     labels_multi = data_multi['lbl'].value_counts().index
     scores_single = get_metrics_single(change_lbl, data_single, labels_single)
-    scores_multi = get_metrics_multi(change_lbl, data_multi, labels_multi)
+    if is_multi_lbl:
+        scores_multi = get_metrics_multi(change_lbl, data_multi, labels_multi)
+    else:
+        scores_multi = pd.DataFrame()
     return scores_single, scores_multi

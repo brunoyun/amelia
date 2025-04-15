@@ -2,11 +2,11 @@ import json
 import itertools
 import pandas as pd
 
-import sampling.metrics as metrics
-import sampling.plot as plot
-import sampling.sampling as spl
-import sampling.prompting as prt
-import sampling.training as tr
+import src.metrics as metrics
+import src.plot as plot
+import src.sampling as spl
+import src.prompting as prt
+import src.training as tr
 
 
 from ast import literal_eval
@@ -98,7 +98,7 @@ def get_parent_comment(comments: list[dict], id: str) -> str:
         if i.get('id') == id:
             return i.get('comment')
 
-def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
+def load_cocolofa(path: str) -> dict:
     """Load the CoCoLoFa dataset
 
     Parameters
@@ -153,7 +153,7 @@ def load_cocolofa(path: str='./Data_jsonl/cocolofa.jsonl') -> dict:
     }
     return res
 
-def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
+def load_mafalfa(path: str) -> dict:
     """Load the MAFALDA dataset
 
     Parameters
@@ -202,7 +202,7 @@ def load_mafalfa(path: str='./Data_jsonl/mafalda.jsonl') -> dict:
     }
     return res
 
-def load_all_dataset(paths: dict) -> tuple[dict, set]:
+def load_all_datasets(paths: dict) -> tuple[dict, set]:
     """Load all datasets specified in the paths dictionary
 
     Parameters
@@ -278,9 +278,9 @@ def run_fallacies(
     savefile:dict
 ):
     print(f'##### Load data #####')
-    data, fallacies = load_all_dataset(paths)
-    spl_data = spl.get_all_spl(data, fallacies, n_sample)
     if do_sample:
+        data, fallacies = load_all_datasets(paths)
+        spl_data = spl.get_all_spl(data, fallacies, n_sample)
         prt_train, prt_val, prt_test = prt.get_prt(
             format_user_prompt,
             data=spl_data,
@@ -292,6 +292,9 @@ def run_fallacies(
         prt_test.to_csv(savefile.get('test_spl_file'), index=False)
     else:
         converter = {'prompt': literal_eval, 'answer': literal_eval}
+        fallacies = set(
+            pd.read_csv(savefile.get('labels_file')['labels'].tolist())
+        )
         prt_train = pd.read_csv(
             savefile.get('train_spl_file'),
             converters=converter
@@ -341,14 +344,14 @@ def run_fallacies(
         sample=prt_val,
         lst_labels=fallacies,
         savefile=savefile.get('stat_val'),
-        title=f'fallacies: sample {spl_name} train'
+        title=f'fallacies: sample {spl_name} val'
     )
     plot.plot_stat_sample(
         change_lbl,
         sample=prt_test,
         lst_labels=fallacies,
         savefile=savefile.get('stat_test'),
-        title=f'Fallacies: sample {spl_name} train'
+        title=f'Fallacies: sample {spl_name} test'
     )
     plot.plot_metric(
         metric=metric_single,
