@@ -153,11 +153,69 @@ def config_fallacies(
     }
     return config
 
+def config_aduc(
+    model_name:str,
+    max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
+    n_sample:int,
+    epoch:int,
+    n_eval:int,
+    paths:dict,
+    system_prompt:str,
+    save_result:bool,
+    do_sample:bool,
+) -> dict:
+    m_name = model_name.split(',')[1]
+    task_name = 'aduc'
+    train_resp = '_train_resp'
+    n_eval_step = np.floor((n_sample/32)/n_eval)
+    spl_name = 'spl2'
+    d_file = None
+    if do_sample:
+        spl_name = 'spl'
+    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
+    if save_result:
+        d_file = get_savefile(
+            task_name=task_name,
+            spl_name=spl_name,
+            m_name=m_name,
+            n_sample=n_sample,
+            epoch=epoch,
+            train_resp=train_resp,
+        )
+    print(f'#### Load Model and Tokenizer')
+    model, tokenizer, training_args = load_model(
+        model_name=model_name,
+        max_seq_length=max_seq_length,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        gpu_mem_use=gpu_mem_use,
+        epoch=epoch,
+        outputs_dir=outputs_dir,
+        n_eval_step=n_eval_step
+    )
+    config = {
+        'model': model,
+        'tokenizer': tokenizer,
+        'training_args': training_args,
+        'max_seq_length': max_seq_length,
+        'n_sample': n_sample,
+        'spl_name': spl_name,
+        'paths': paths,
+        'sys_prt': system_prompt,
+        'do_sample': do_sample,
+        'savefile': d_file
+    }
+    return config
+
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
     config = {
-        'fallacies': config_fallacies(**conf.get('fallacies'))
+        'fallacies': config_fallacies(**conf.get('fallacies')),
+        'aduc': config_aduc(**conf.get('aduc'))
     }
     if task is not None and config.get(task) is not None:
         return config.get(task)

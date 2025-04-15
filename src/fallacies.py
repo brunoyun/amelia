@@ -293,7 +293,7 @@ def run_fallacies(
     else:
         converter = {'prompt': literal_eval, 'answer': literal_eval}
         fallacies = set(
-            pd.read_csv(savefile.get('labels_file')['labels'].tolist())
+            pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
         )
         prt_train = pd.read_csv(
             savefile.get('train_spl_file'),

@@ -42,16 +42,11 @@ def map_edu_adu(edu: dict, adu: list[dict]) -> dict:
             print(f'Multiple adu for one edu\n\t{tmp}')
     return res
 
-def get_lbls(lst_s: list[dict]) -> set:
-    lbls = [
-        i
-        if i != 'MajorClaim' and i != 'Implicit Claim'
-        else
-        'Claim'
-        for s in lst_s
-        for i in s.get('label')
-    ]
-    return set(lbls)
+def unifie_labels(label: str) -> str:
+    if label == 'MajorClaim' or label == 'Implicit Claim':
+        return 'Claim'
+    else:
+        return label
 
 def load_pe(path:str='./Data_jsonl/perssuasive_essays.jsonl') -> dict:
     all_data = []
@@ -64,10 +59,10 @@ def load_pe(path:str='./Data_jsonl/perssuasive_essays.jsonl') -> dict:
             tmp = {
                 'text': data.get('text'),
                 'sentences': arg.get('text'),
-                'label': arg.get('type').split(',')
+                'label': unifie_labels(arg.get('type')).split(',')
             }
             sentences.append(tmp)
-    lbls_pe = get_lbls(sentences)
+    lbls_pe = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbls_pe
@@ -91,10 +86,10 @@ def load_abstrct_neo(path:str='./Data_jsonl/abstrct_neoplasm.jsonl') -> dict:
             tmp = {
                 'text': data.get('text'),
                 'sentences': arg.get('text'),
-                'label': arg.get('type').split(',')
+                'label': unifie_labels(arg.get('type')).split(',')
             }
             sentences.append(tmp)
-    lbls_abst = get_lbls(sentences)
+    lbls_abst = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbls_abst
@@ -120,10 +115,10 @@ def load_abstrct_glau(
             tmp = {
                 'text': data.get('text'),
                 'sentences': arg.get('text'),
-                'label': arg.get('type').split(','),
+                'label': unifie_labels(arg.get('type')).split(','),
             }
             sentences.append(tmp)
-    lbls_abst_glau = get_lbls(sentences)
+    lbls_abst_glau = spl.get_labels(sentences)
     res = {
         'test': sentences,
         'list_label': lbls_abst_glau
@@ -143,10 +138,10 @@ def load_abstrct_mixed(
             tmp = {
                 'text': data.get('arguments'),
                 'sentences': arg.get('text'),
-                'label': arg.get('type').split(',')
+                'label': unifie_labels(arg.get('type')).split(',')
             }
             sentences.append(tmp)
-    lbls_abst_mixed = get_lbls(sentences)
+    lbls_abst_mixed = spl.get_labels(sentences)
     res = {
         'test': sentences,
         'list_label': lbls_abst_mixed,
@@ -168,10 +163,10 @@ def load_mtp1(path:str='./Data_jsonl/microtext_p1.jsonl') -> dict:
                     'topic': data.get('topic'),
                     'text': text,
                     'sentences': i.get('sentences'),
-                    'label': i.get('label').split(',')
+                    'label': unifie_labels(i.get('label')).split(',')
                 }
                 sentences.append(tmp)
-    lbl_mtp1 = get_lbls(sentences)
+    lbl_mtp1 = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbl_mtp1,
@@ -196,14 +191,15 @@ def load_mtp2(path:str='./Data_jsonl/microtext_p2.jsonl') -> dict:
         for edu in data.get('edu'):
             adu = map_edu_adu(edu, data.get('adu'))
             for i in adu:
-                tmp = {
-                    'topic': data.get('topic'),
-                    'text': text,
-                    'sentences': i.get('sentences'),
-                    'label': i.get('label').split(',')
-                }
-                sentences.append(tmp)
-    lbl_mtp2 = get_lbls(sentences)
+                if i.get('label') != 'Other':
+                    tmp = {
+                        'topic': data.get('topic'),
+                        'text': text,
+                        'sentences': i.get('sentences'),
+                        'label': unifie_labels(i.get('label')).split(',')
+                    }
+                    sentences.append(tmp)
+    lbl_mtp2 = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbl_mtp2,
@@ -264,7 +260,7 @@ def run_aduc(
     else:
         converter = {'prompt': literal_eval, 'answer': literal_eval}
         labels = set(
-            pd.read_csv(savefile.get('labels_file')['labels'].tolist())
+            pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
         )
         prt_train = pd.read_csv(
             savefile.get('train_spl_file'),
