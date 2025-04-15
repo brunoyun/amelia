@@ -185,7 +185,7 @@ def config_aduc(
             epoch=epoch,
             train_resp=train_resp,
         )
-    print(f'#### Load Model and Tokenizer')
+    print(f'##### Load Model and Tokenizer #####')
     model, tokenizer, training_args = load_model(
         model_name=model_name,
         max_seq_length=max_seq_length,
