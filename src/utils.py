@@ -154,15 +154,19 @@ def load_config(
     }
     return config
 
-def config_fallacies(task:str, conf:dict) -> dict:
+def config_fallacies(conf:dict, task:str='fallacies') -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
-def config_aduc(task:str, conf:dict) -> dict:
+def config_aduc(conf:dict, task:str='aduc') -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
-def config_claim_detect(task:str, conf:dict) -> dict:
+def config_claim_detect(conf:dict, task:str='claim_detection') -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
+def config_evi_detect(conf:dict, task:str='evidence_detection') -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
@@ -344,8 +348,10 @@ def get_config(task:str=None)->dict:
         conf = json.loads(conf_file.read())
     match task:
         case 'fallacies':
-            return config_fallacies(task=task, conf=conf.get(task))
+            return config_fallacies(conf=conf.get(task), task=task)
         case 'aduc':
-            return config_aduc(task=task, conf=conf.get(task))
+            return config_aduc(conf=conf.get(task), task=task)
         case 'claim_detection':
-            return config_claim_detect(task=task, conf=conf.get(task))
+            return config_claim_detect(conf=conf.get(task), task=task)
+        case 'evidence_detection':
+            return config_evi_detect(conf=conf.get(task), task=task)

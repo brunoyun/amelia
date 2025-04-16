@@ -48,7 +48,7 @@ def unifie_labels(label: str) -> str:
     else:
         return label
 
-def load_pe(path:str='./Data_jsonl/perssuasive_essays.jsonl') -> dict:
+def load_pe(path:str) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -75,7 +75,7 @@ def load_pe(path:str='./Data_jsonl/perssuasive_essays.jsonl') -> dict:
     }
     return res
 
-def load_abstrct_neo(path:str='./Data_jsonl/abstrct_neoplasm.jsonl') -> dict:
+def load_abstrct_neo(path:str) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -148,7 +148,7 @@ def load_abstrct_mixed(
     }
     return res
 
-def load_mtp1(path:str='./Data_jsonl/microtext_p1.jsonl') -> dict:
+def load_mtp1(path:str) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -180,7 +180,7 @@ def load_mtp1(path:str='./Data_jsonl/microtext_p1.jsonl') -> dict:
     return res
         
 
-def load_mtp2(path:str='./Data_jsonl/microtext_p2.jsonl') -> dict:
+def load_mtp2(path:str) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
