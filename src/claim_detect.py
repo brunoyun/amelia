@@ -205,7 +205,7 @@ def run_claim_detect(
     plot.plot_stat_sample(
         change_lbl,
         sample=prt_test,
-        labels=labels,
+        lst_labels=labels,
         savefile=savefile.get('stat_test'),
         title=f'claim detection: sample {spl_name} test'
     )
