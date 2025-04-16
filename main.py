@@ -1,14 +1,18 @@
 from src.utils import get_config
 from src.fallacies import run_fallacies
 from src.aduc import run_aduc
+from src.claim_detect import run_claim_detect
 
 def run(task: str=None):
     if task is not None:
         config = get_config(task)
-        if task == 'fallacies':
-            run_fallacies(**config)
-        if task == 'aduc':
-            run_aduc(**config)
+        match task:
+            case 'fallacies':
+                run_fallacies(**config)
+            case 'aduc':
+                run_aduc(**config)
+            case 'claim_detection':
+                run_claim_detect(**config)
     else:
         print(f'Error while getting config for task {task}')
 

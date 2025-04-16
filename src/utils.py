@@ -96,6 +96,77 @@ def load_model(
     )
     return model, tokenizer, training_args
 
+def load_config(
+    task_name:str,
+    model_name:str,
+    max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
+    n_sample:int,
+    epoch:int,
+    n_eval:int,
+    paths:dict,
+    system_prompt:str,
+    save_result:bool,
+    do_sample:bool,
+) -> dict:
+    m_name = model_name.split('/')[1]
+    task_name = task_name
+    train_resp = '_train_resp'
+    n_eval_step = np.floor((n_sample/32)/n_eval)
+    spl_name = 'spl2'
+    d_file = None
+    if do_sample:
+        spl_name = 'spl'
+    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
+    if save_result:
+        d_file = get_savefile(
+            task_name=task_name,
+            spl_name=spl_name,
+            m_name=m_name,
+            n_sample=n_sample,
+            epoch=epoch,
+            train_resp=train_resp,
+        )
+    print(f'##### Load Model and Tokenizer #####')
+    model, tokenizer, training_args = load_model(
+        model_name=model_name,
+        max_seq_length=max_seq_length,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        gpu_mem_use=gpu_mem_use,
+        epoch=epoch,
+        outputs_dir=outputs_dir,
+        n_eval_step=n_eval_step
+    )
+    config = {
+        'model': model,
+        'tokenizer': tokenizer,
+        'training_args': training_args,
+        'max_seq_length': max_seq_length,
+        'n_sample': n_sample,
+        'spl_name': spl_name,
+        'paths': paths,
+        'sys_prt': system_prompt,
+        'do_sample': do_sample,
+        'savefile': d_file
+    }
+    return config
+
+def config_fallacies(task:str, conf:dict) -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
+def config_aduc(task:str, conf:dict) -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
+def config_claim_detect(task:str, conf:dict) -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
+'''
 def config_fallacies(
     model_name:str,
     max_seq_length:int,
@@ -210,10 +281,71 @@ def config_aduc(
     }
     return config
 
+def config_claim_detect(
+    model_name:str,
+    max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
+    n_sample:int,
+    epoch:int,
+    n_eval:int,
+    paths:dict,
+    system_prompt:str,
+    save_result:bool,
+    do_sample:bool,
+) -> dict:
+    m_name = model_name.split('/')[1]
+    task_name = 'claim_detection'
+    train_resp = '_train_resp'
+    n_eval_step = np.floor((n_sample/32)/n_eval)
+    spl_name = 'spl2'
+    d_file = None
+    if do_sample:
+        spl_name = 'spl'
+    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
+    if save_result:
+        d_file = get_savefile(
+            task_name=task_name,
+            spl_name=spl_name,
+            m_name=m_name,
+            n_sample=n_sample,
+            epoch=epoch,
+            train_resp=train_resp,
+        )
+    print(f'##### Load Model and Tokenizer #####')
+    model, tokenizer, training_args = load_model(
+        model_name=model_name,
+        max_seq_length=max_seq_length,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        gpu_mem_use=gpu_mem_use,
+        epoch=epoch,
+        outputs_dir=outputs_dir,
+        n_eval_step=n_eval_step
+    )
+    config = {
+        'model': model,
+        'tokenizer': tokenizer,
+        'training_args': training_args,
+        'max_seq_length': max_seq_length,
+        'n_sample': n_sample,
+        'spl_name': spl_name,
+        'paths': paths,
+        'sys_prt': system_prompt,
+        'do_sample': do_sample,
+        'savefile': d_file
+    }
+    return config
+'''
+
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
-    if task == 'fallacies':
-        return config_fallacies(**conf.get('fallacies'))
-    if task == 'aduc':
-        return config_aduc(**conf.get('aduc'))
+    match task:
+        case 'fallacies':
+            return config_fallacies(task=task, conf=conf.get(task))
+        case 'aduc':
+            return config_aduc(task=task, conf=conf.get(task))
+        case 'claim_detection':
+            return config_claim_detect(task=task, conf=conf.get(task))
