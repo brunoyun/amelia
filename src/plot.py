@@ -48,21 +48,26 @@ def plot_stat_sample(
         'under': under,
         'over': over,
     })
-    for _,v in d.items():
-        if bar_label:
-            lbl = 'sample'
-        else:
-            lbl = 'oversample'
-        p = ax.bar(x, v[0][1], width, label=f'{lbl} {v[0][0]}', bottom=b)
+    for i in range(len(d.get('under'))):
+        lbl = 'sample'
         p = ax.bar(
             x=x,
-            height=v[1][1],
+            height=d.get('under')[i][1],
             width=width,
-            label=f'{lbl} {v[1][0]}',
-            bottom=b + v[0][1]
+            label=f'{lbl} {d.get('under')[i][0]}',
+            bottom=b
         )
-        bar_label=False
-        b = b + v[0][1] + v[1][1]
+        b = b + d.get('under')[i][1]
+    for i in range(len(d.get('over'))):
+        lbl = 'oversample'
+        p = ax.bar(
+            x=x,
+            height=d.get('over')[i][1],
+            width=width,
+            label=f'{lbl} {d.get('over')[i][0]}',
+            bottom=b
+        )
+        b = b + d.get('over')[i][1]
     lst_labels = change_lbl(lst_labels)
     ax.set_xticks(x, sorted(lst_labels), rotation=90)
     ax.legend(loc='best')
