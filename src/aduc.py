@@ -316,7 +316,7 @@ def run_aduc(
     plot.plot_stat_sample(
         change_lbl,
         sample=prt_test,
-        labels=labels,
+        lst_labels=labels,
         savefile=savefile.get('stat_test'),
         title=f'aduc: sample {spl_name} test'
     )
