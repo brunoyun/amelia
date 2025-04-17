@@ -3,6 +3,7 @@ from src.fallacies import run_fallacies
 from src.aduc import run_aduc
 from src.claim_detect import run_claim_detect
 from src.evidence_detect import run_evidence_detect
+from src.stance_detect import run_stance_detect
 
 def run(task: str=None):
     if task is not None:
@@ -16,6 +17,8 @@ def run(task: str=None):
                 run_claim_detect(**config)
             case 'evidence_detection':
                 run_evidence_detect(**config)
+            case 'stance_detection':
+                run_stance_detect(**config)
     else:
         print(f'Error while getting config for task {task}')
 
