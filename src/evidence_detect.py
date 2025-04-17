@@ -174,8 +174,8 @@ def run_evidence_detect(
     tr.train(
         model=model,
         tokenizer=tokenizer,
-        data_test=data_test,
-        labels=labels,
+        data_train=data_train,
+        data_val=data_val,
         max_seq_length=max_seq_length,
         training_args=training_args
     )
