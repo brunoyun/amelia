@@ -54,7 +54,7 @@ def plot_stat_sample(
             x=x,
             height=d.get('under')[i][1],
             width=width,
-            label=f'{lbl} {d.get('under')[i][0]}',
+            label=f'{lbl} {d.get("under")[i][0]}',
             bottom=b
         )
         b = b + d.get('under')[i][1]
@@ -64,7 +64,7 @@ def plot_stat_sample(
             x=x,
             height=d.get('over')[i][1],
             width=width,
-            label=f'{lbl} {d.get('over')[i][0]}',
+            label=f'{lbl} {d.get("over")[i][0]}',
             bottom=b
         )
         b = b + d.get('over')[i][1]
