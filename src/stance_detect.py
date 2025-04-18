@@ -16,9 +16,9 @@ def change_lbl(labels:list) -> list:
     return labels
 
 def unifie_labels(label:str) -> str:
-    if label == 'Pro' or label == 'support':
+    if label == 'Pro'  or label == 'PRO' or label == 'support':
         return 'For'
-    elif label == 'Con' or label == 'contest' or label == 'attack':
+    elif label == 'Con' or label == 'CON' or label == 'contest' or label == 'attack':
         return 'Against'
     else:
         return label
@@ -35,9 +35,43 @@ def map_aqm(labels:list, sentences:list) -> list:
         res.append(tmp)
     return res
 
+def get_claims(claims: list) -> list:
+    res = []
+    for claim in claims:
+        tmp = {
+            'sentences': claim.get('claimCorrectedText'),
+            'label' : claim.get('stance')
+        }
+        res.append(tmp)
+    return res
+
 def load_ibm_claim_polarity(path:str) -> dict:
-    # TODO
-    pass
+    all_data = []
+    sentences = []
+    with open(path, 'r') as f:
+        for line in f:
+            all_data.append(json.loads(line))
+    for data in all_data:
+        claims = get_claims(data.get('claims'))
+        for claim in claims:
+            tmp = {
+                'topic': data.get('topicText'),
+                'sentences': claim.get('sentences'),
+                'label': unifie_labels(claim.get('label')).split(',')
+            }
+            sentences.append(tmp)
+    lbl_ibm_claim_pola = spl.get_labels(sentences)
+    train_set, validation_set, test_set = spl.get_train_val_test_split(
+        data=sentences,
+        lbls=lbl_ibm_claim_pola
+    )
+    res = {
+        'train': train_set,
+        'validation': validation_set,
+        'test': test_set,
+        'list_label': lbl_ibm_claim_pola
+    }
+    return res
 
 def load_comarg(path:str) -> dict:
     all_data = []
@@ -172,9 +206,8 @@ def load_aqm(path:str) -> dict:
 
 def load_all_datasets(paths:dict) -> tuple[dict, set]:
     res = {
-        # 'ibm_claim_pola': load_ibm_claim_polarity(paths.get('ibm_claim_pola')),
+        'ibm_claim_pola': load_ibm_claim_polarity(paths.get('ibm_claim_pola')),
         'comarg': load_comarg(paths.get('comarg')),
-        # 'nlas': load_nlas(paths.get('nlas')),
         'iam_stance': load_iam_stance(paths.get('iam_stance')),
         'aqm': load_aqm(paths.get('aqm'))
     }

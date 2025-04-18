@@ -81,6 +81,7 @@
         "epoch": 2,
         "n_eval": 8,
         "paths": {
+            "ibm_claim_pola": "./Data_jsonl/ibm_claim_polarity.jsonl",
             "comarg": "./Data_jsonl/comarg.jsonl",
             "iam_stance": "./Data_jsonl/iam_stance.jsonl",
             "aqm": "./Data_jsonl/aqm.jsonl"
