@@ -174,6 +174,10 @@ def config_stance_detect(conf:dict, task:str='stance_detection') -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
+def config_evi_type(conf:dict, task:str='evidence_type') -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
@@ -188,3 +192,5 @@ def get_config(task:str=None)->dict:
             return config_evi_detect(conf=conf.get(task), task=task)
         case 'stance_detection':
             return config_stance_detect(conf=conf.get(task), task=task)
+        case 'evidence_type':
+            return config_evi_type(conf=conf.get(task), task=task)

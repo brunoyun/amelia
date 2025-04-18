@@ -89,5 +89,23 @@
         "system_prompt": "You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is For, Against or neutral. Utilize the [TOPIC] as context to support your decision\nYour answer must be in the following format with only For, Against or neutral in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
         "save_result": true,
         "do_sample": false
+    },
+    "evidence_type": {
+        "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+        "max_seq_length" : 2048,
+        "dtype": null,
+        "load_in_4bit": true,
+        "gpu_mem_use": 0.6,
+        "n_sample": 4000,
+        "epoch": 2,
+        "n_eval": 8,
+        "paths": {
+            "ibm_type": "./Data_jsonl/ibm_type.jsonl",
+            "aqm": "./Data_jsonl/aqm.jsonl",
+            "argsum": "./Data_jsonl/argsum_evidence_type.jsonl"
+        },
+        "system_prompt": "You are an expert in argumentation. Your task is to determine the type of evidence of the given [SENTENCE]. The type of evidence would be in the [TYPE] set. Utilize the [TOPIC] and the [CLAIM] as context to support your decision\nYour answer must be in the following format with only the type of evidence in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+        "save_result": true,
+        "do_sample": false
     }
 }
