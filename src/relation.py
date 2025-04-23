@@ -379,6 +379,10 @@ def run_relation(
             savefile.get('val_spl_file'),
             converters=converter
         )
+        prt_test = pd.read_csv(
+            savefile.get('test_spl_file'),
+            converters=converter
+        )
     data_train, data_val, data_test = prt.get_datasets(
         tokenizer=tokenizer,
         train=prt_train,
@@ -399,6 +403,7 @@ def run_relation(
         model=model,
         tokenizer=tokenizer,
         data_test=data_test,
+        labels=labels,
         result_file=savefile.get('test_result_file')
     )
     print(f'##### Metrics and plot #####')

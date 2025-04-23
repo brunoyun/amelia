@@ -26,7 +26,7 @@ def get_savefile(
     val_spl_file = f'./sampled_data/{task_name}/{spl_name}_val.csv'
     test_spl_file = f'./sampled_data/{task_name}/{spl_name}_test.csv'
     test_result_file = f'./test_res/{task_name}/test_res_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}.csv'
-    file_stat_train = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name} _stat_train.png'
+    file_stat_train = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_train.png'
     file_stat_val = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_val.png'
     file_stat_test = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_test.png'
     file_plot_single = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_single.png'
