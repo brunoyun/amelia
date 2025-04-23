@@ -49,7 +49,7 @@
             "ibm_claim": "./Data_jsonl/ibm_claim.jsonl",
             "ibm_args": "./Data_jsonl/ibm_argument.jsonl"
         },
-        "system_prompt": "You are an expert in argumentation. Your task is to determiner whether the given [SENTENCE] is a Claim or Non-claim. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Non-claim in the answer section:\n <|ANSWER|><answer><|ANSWER|>.",
+        "system_prompt": "You are an expert in argumentation. Your task is to determiner whether the given [SENTENCE] is a Claim or Non-claim. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Non-claim in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
         "save_result": true,
         "do_sample": false
     },
@@ -105,6 +105,29 @@
             "argsum": "./Data_jsonl/argsum_evidence_type.jsonl"
         },
         "system_prompt": "You are an expert in argumentation. Your task is to determine the type of evidence of the given [SENTENCE]. The type of evidence would be in the [TYPE] set. Utilize the [TOPIC] and the [CLAIM] as context to support your decision\nYour answer must be in the following format with only the type of evidence in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+        "save_result": true,
+        "do_sample": false
+    },
+    "relation": {
+        "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+        "max_seq_length": 2048,
+        "dtype": null,
+        "load_in_4bit": true,
+        "gpu_mem_use": 0.6,
+        "n_sample": 4000,
+        "epoch": 2,
+        "n_eval": 8,
+        "paths": {
+            "mtp1": "./Data_jsonl/microtext_p1.jsonl",
+            "mtp2": "./Data_jsonl/microtext_p2.jsonl",
+            "pe": "./Data_jsonl/perssuasive_essays.jsonl",
+            "abstrct": "./Data_jsonl/abstrct_neoplasm.jsonl",
+            "nk_debate": "./Data_jsonl/nixon_kennedy_debates.jsonl",
+            "node": "./Data_jsonl/node_debatepedia.jsonl",
+            "ibm_claim_pola": "./Data_jsonl/ibm_claim_polarity.jsonl",
+            "comarg": "./Data_jsonl/comarg.jsonl"
+        },
+        "system_prompt": "You are an expert in argumentation. Your task is to determine the type of relation between [SOURCE] and [TARGET]. The type of relation would be in the [RELATION] set. Utilize the [TOPIC] as context to support your decision\nYour answer must be in the following format with only the type of the relation in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
         "save_result": true,
         "do_sample": false
     }

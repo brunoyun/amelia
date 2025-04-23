@@ -5,6 +5,14 @@ from transformers import TrainingArguments
 import json
 import numpy as np
 
+from src.fallacies import run_fallacies
+from src.aduc import run_aduc
+from src.claim_detect import run_claim_detect
+from src.evidence_detect import run_evidence_detect
+from src.stance_detect import run_stance_detect
+from src.evidence_type import run_evidence_type
+from src.relation import run_relation
+
 def get_savefile(
     task_name:str,
     spl_name:str,
@@ -178,6 +186,10 @@ def config_evi_type(conf:dict, task:str='evidence_type') -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
+def config_relation(conf:dict, task:str="relation") -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
@@ -194,3 +206,26 @@ def get_config(task:str=None)->dict:
             return config_stance_detect(conf=conf.get(task), task=task)
         case 'evidence_type':
             return config_evi_type(conf=conf.get(task), task=task)
+        case 'relation':
+            return config_relation(conf=conf.get(task), task=task)
+
+def run(task: str=None):
+    if task is not None:
+        config = get_config(task)
+        match task:
+            case 'fallacies':
+                run_fallacies(**config)
+            case 'aduc':
+                run_aduc(**config)
+            case 'claim_detection':
+                run_claim_detect(**config)
+            case 'evidence_detection':
+                run_evidence_detect(**config)
+            case 'stance_detection':
+                run_stance_detect(**config)
+            case 'evidence_type':
+                run_evidence_type(**config)
+            case 'relation':
+                run_relation(**config)
+    else:
+        print(f'Error while getting config for task {task}')

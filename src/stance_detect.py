@@ -295,21 +295,21 @@ def run_stance_detect(
         sample=prt_train,
         lst_labels=labels,
         savefile=savefile.get('stat_train'),
-        title=f'stance detection: sample {n_sample} train'
+        title=f'stance detection: sample {spl_name} train'
     )
     plot.plot_stat_sample(
         change_lbl,
         sample=prt_val,
         lst_labels=labels,
         savefile=savefile.get('stat_val'),
-        title=f'stance detection: sample {n_sample} val'
+        title=f'stance detection: sample {spl_name} val'
     )
     plot.plot_stat_sample(
         change_lbl,
         sample=prt_test,
         lst_labels=labels,
         savefile=savefile.get('stat_test'),
-        title=f'stance detection: sample {n_sample} test'
+        title=f'stance detection: sample {spl_name} test'
     )
     plot.plot_metric(
         metric=metric,
