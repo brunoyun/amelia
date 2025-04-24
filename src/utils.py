@@ -12,6 +12,7 @@ from src.evidence_detect import run_evidence_detect
 from src.stance_detect import run_stance_detect
 from src.evidence_type import run_evidence_type
 from src.relation import run_relation
+from src.quality import run_quality
 
 def get_savefile(
     task_name:str,
@@ -190,6 +191,10 @@ def config_relation(conf:dict, task:str="relation") -> dict:
     config = load_config(task_name=task, **conf)
     return config
 
+def config_quality(conf:dict, task:str='quality') -> dict:
+    config = load_config(task_name=task, **conf)
+    return config
+
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
@@ -208,6 +213,8 @@ def get_config(task:str=None)->dict:
             return config_evi_type(conf=conf.get(task), task=task)
         case 'relation':
             return config_relation(conf=conf.get(task), task=task)
+        case 'quality':
+            return config_quality(conf=conf.get(task), task=task)
 
 def run(task: str=None):
     if task is not None:
@@ -227,5 +234,7 @@ def run(task: str=None):
                 run_evidence_type(**config)
             case 'relation':
                 run_relation(**config)
+            case 'quality':
+                run_quality(**config)
     else:
         print(f'Error while getting config for task {task}')

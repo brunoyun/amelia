@@ -130,5 +130,21 @@
         "system_prompt": "You are an expert in argumentation. Your task is to determine the type of relation between [SOURCE] and [TARGET]. The type of relation would be in the [RELATION] set. Utilize the [TOPIC] as context to support your decision\nYour answer must be in the following format with only the type of the relation in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
         "save_result": true,
         "do_sample": false
+    },
+    "quality": {
+        "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+        "max_seq_length": 2048,
+        "dtype": null,
+        "load_in_4bit": true,
+        "gpu_mem_use": 0.6,
+        "n_sample": 4000,
+        "epoch": 2,
+        "n_eval": 8,
+        "paths": {
+            "dagsthul": "./Data_jsonl/dagstuhl.jsonl"
+        },
+        "system_prompt": "You are an expert in argumentation. Your task is to determine the quality of the [SENTENCE]. The quality would be in the [QUALITY] set. Utilize the [TOPIC], the [STANCE] and the [DEFINITION] as context to support your decision\nYour answer must be in the following format with only the quality in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+        "save_result": true,
+        "do_sample": false
     }
 }
