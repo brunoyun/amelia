@@ -1,6 +1,9 @@
+from unsloth import FastLanguageModel
 import json
 import itertools
 import random
+import re
+import os
 import pandas as pd
 import numpy as np
 
@@ -151,8 +154,11 @@ def run_evidence_type(
     tokenizer,
     training_args,
     max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
     n_sample:int,
-    spl_name:str,
+    # spl_name:str,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -203,40 +209,91 @@ def run_evidence_type(
         max_seq_length=max_seq_length,
         training_args=training_args
     )
-    print(f'##### Testing #####')
-    result_test = tr.test(
-        model=model,
-        tokenizer=tokenizer,
-        data_test=data_test,
+    del model
+    with os.scandir(savefile.get('outputs_dir')) as sc_it:
+        for item in sc_it:
+            if 'checkpoint' in item.name:
+                f_res = re.split('(.csv)', savefile.get('test_result_file'))
+                f_res = f'{f_res[0]}_{item.name}{f_res[1]}'
+                f_plot = re.split('(.png)', savefile.get('plot_single'))
+                f_plot = f'{f_plot[0]}_{item.name}{f_plot[1]}'
+                f_metric = re.split('(.csv)', savefile.get('metric_single'))
+                f_metric = f'{f_metric[0]}_{item.name}{f_metric}'
+                print(f'##### Testing for {item.name} #####')
+                chkpt_model, chkpt_tokenizer = FastLanguageModel.from_pretrained(
+                    model_name=f'{savefile.get('outputs_dir')}/{item.name}',
+                    max_seq_length=max_seq_length,
+                    dtype=dtype,
+                    load_in_4bit=load_in_4bit,
+                    fast_inference=True,
+                    gpu_memory_utilization=gpu_mem_use
+                )
+                
+                result_test = tr.test(
+                    model=chkpt_model,
+                    tokenizer=chkpt_tokenizer,
+                    data_test=data_test,
+                    labels=labels,
+                    result_file=f_res
+                )
+                print(f'##### Metrics and plot for {item.name} #####')
+                metric_single, _ = metrics.get_metrics(
+                    change_lbl,
+                    data=result_test,
+                    is_multi_lbl=False
+                )
+                plot.plot_metric(
+                    metric=metric_single,
+                    title=f'Evidence Type: Scores {n_sample} sample single label',
+                    file_plot=f_plot,
+                    file_metric=f_metric
+                )
+            del chkpt_model
+            del chkpt_tokenizer
+    plot.stat_sample(
+        change_lbl,
+        task_name='Evidence Type',
+        sample_train=prt_train,
+        sample_val=prt_val,
+        sample_test=prt_test,
         labels=labels,
-        result_file=savefile.get('test_result_file')
+        savefile=savefile
     )
-    print(f'##### Metrics and plot #####')
-    metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_train,
-        lst_labels=labels,
-        savefile=savefile.get('stat_train'),
-        title=f'evidence type: sample {spl_name} train'
-    )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_val,
-        lst_labels=labels,
-        savefile=savefile.get('stat_val'),
-        title=f'evidence type: sample {spl_name} val'
-    )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_test,
-        lst_labels=labels,
-        savefile=savefile.get('stat_test'),
-        title=f'evidence type: sample {spl_name} test'
-    )
-    plot.plot_metric(
-        metric=metric,
-        title=f'evidence type: Scores {n_sample} sample',
-        file_plot=savefile.get('plot_single'),
-        file_metric=savefile.get('metric_single')
-    )
+
+    # print(f'##### Testing #####')
+    # result_test = tr.test(
+    #     model=model,
+    #     tokenizer=tokenizer,
+    #     data_test=data_test,
+    #     labels=labels,
+    #     result_file=savefile.get('test_result_file')
+    # )
+    # print(f'##### Metrics and plot #####')
+    # metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_train,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_train'),
+    #     title=f'evidence type: sample {spl_name} train'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_val,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_val'),
+    #     title=f'evidence type: sample {spl_name} val'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_test,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_test'),
+    #     title=f'evidence type: sample {spl_name} test'
+    # )
+    # plot.plot_metric(
+    #     metric=metric,
+    #     title=f'evidence type: Scores {n_sample} sample',
+    #     file_plot=savefile.get('plot_single'),
+    #     file_metric=savefile.get('metric_single')
+    # )

@@ -3,6 +3,7 @@ from unsloth import is_bfloat16_supported
 from transformers import TrainingArguments
 
 import json
+import time
 import numpy as np
 
 from src.fallacies import run_fallacies
@@ -20,7 +21,8 @@ def get_savefile(
     m_name:str,
     n_sample:int,
     epoch:int,
-    train_resp:str
+    train_resp:str,
+    outputs_dir:str
 ) -> dict:
     labels_file = f'./sampled_data/{task_name}/labels.csv'
     train_spl_file = f'./sampled_data/{task_name}/{spl_name}_train.csv'
@@ -47,6 +49,7 @@ def get_savefile(
         'plot_multi': file_plot_multi,
         'metric_single': file_metric_single,
         'metric_multi': file_metric_multi,
+        'outputs_dir': outputs_dir
     }
     return d_file
 
@@ -58,7 +61,9 @@ def load_model(
     gpu_mem_use:float,
     epoch:float,
     outputs_dir:str,
+    save_steps:int,
     n_eval_step:int,
+    r_lora:int=16,
 ):
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
@@ -70,7 +75,7 @@ def load_model(
     )
     model = FastLanguageModel.get_peft_model(
         model=model,
-        r = 16, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+        r = r_lora, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                           "gate_proj", "up_proj", "down_proj",],
         lora_alpha = 16,
@@ -99,19 +104,22 @@ def load_model(
         lr_scheduler_type = "linear",
         seed = 3407,
         output_dir = outputs_dir,
+        save_strategy='steps',
+        save_steps=save_steps,
         report_to = "tensorboard", # Use this for WandB etc
         eval_strategy="steps",
         eval_steps=n_eval_step,
     )
     return model, tokenizer, training_args
 
-def load_config(
+def load_training_config(
     task_name:str,
     model_name:str,
     max_seq_length:int,
     dtype,
     load_in_4bit:bool,
     gpu_mem_use:float,
+    r_lora:int,
     n_sample:int,
     epoch:int,
     n_eval:int,
@@ -121,13 +129,13 @@ def load_config(
     do_sample:bool,
 ) -> dict:
     m_name = model_name.split('/')[1]
-    task_name = task_name
     train_resp = '_train_resp'
     n_eval_step = np.floor((n_sample/32)/n_eval)
+    save_steps = np.round((n_sample/32)/2)
     spl_name = 'spl2'
     d_file = None
     if do_sample:
-        spl_name = 'spl'
+        spl_name = f'spl_{str(time.time()).replace('.', '-')}'
     outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
     if save_result:
         d_file = get_savefile(
@@ -137,6 +145,7 @@ def load_config(
             n_sample=n_sample,
             epoch=epoch,
             train_resp=train_resp,
+            outputs_dir=outputs_dir
         )
     print(f'##### Load Model and Tokenizer #####')
     model, tokenizer, training_args = load_model(
@@ -147,74 +156,127 @@ def load_config(
         gpu_mem_use=gpu_mem_use,
         epoch=epoch,
         outputs_dir=outputs_dir,
-        n_eval_step=n_eval_step
+        save_steps=save_steps,
+        n_eval_step=n_eval_step,
+        r_lora=r_lora
+    )
+    if task_name == 'evidence_type':
+        config = {
+            'model': model,
+            'tokenizer': tokenizer,
+            'training_args': training_args,
+            'max_seq_length': max_seq_length,
+            'dtype': dtype,
+            'load_in_4bit': load_in_4bit,
+            'gpu_mem_use': gpu_mem_use,
+            'n_sample': n_sample,
+            # 'spl_name': spl_name,
+            'paths': paths,
+            'sys_prt': system_prompt,
+            'do_sample': do_sample,
+            'savefile': d_file
+        }
+    else:
+        config = {
+            'model': model,
+            'tokenizer': tokenizer,
+            'training_args': training_args,
+            'max_seq_length': max_seq_length,
+            'n_sample': n_sample,
+            # 'spl_name': spl_name,
+            'paths': paths,
+            'sys_prt': system_prompt,
+            'do_sample': do_sample,
+            'savefile': d_file
+        }
+    return config
+
+def load_config_inference(
+    model_name:str,
+    max_seq_length:int,
+    dtype,
+    load_in_4bit:bool,
+    gpu_mem_use:float,
+) -> dict:
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=model_name,
+        max_seq_length=max_seq_length,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        fast_inference=True,
+        gpu_memory_utilization=gpu_mem_use
     )
     config = {
         'model': model,
         'tokenizer': tokenizer,
-        'training_args': training_args,
-        'max_seq_length': max_seq_length,
-        'n_sample': n_sample,
-        'spl_name': spl_name,
-        'paths': paths,
-        'sys_prt': system_prompt,
-        'do_sample': do_sample,
-        'savefile': d_file
     }
     return config
 
-def config_fallacies(conf:dict, task:str='fallacies') -> dict:
-    config = load_config(task_name=task, **conf)
+def fn_config(
+    task_name:str,
+    do_training:bool,
+    training_params:dict,
+    params:dict
+) -> dict:
+    if do_training:
+        config = load_training_config(task_name=task_name, **training_params)
+    else:
+        config = load_config_inference(**params)
     return config
 
-def config_aduc(conf:dict, task:str='aduc') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_fallacies(conf:dict, task:str='fallacies') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_claim_detect(conf:dict, task:str='claim_detection') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_aduc(conf:dict, task:str='aduc') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_evi_detect(conf:dict, task:str='evidence_detection') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_claim_detect(conf:dict, task:str='claim_detection') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_stance_detect(conf:dict, task:str='stance_detection') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_evi_detect(conf:dict, task:str='evidence_detection') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_evi_type(conf:dict, task:str='evidence_type') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_stance_detect(conf:dict, task:str='stance_detection') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_relation(conf:dict, task:str="relation") -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_evi_type(conf:dict, task:str='evidence_type') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
-def config_quality(conf:dict, task:str='quality') -> dict:
-    config = load_config(task_name=task, **conf)
-    return config
+# def config_relation(conf:dict, task:str="relation") -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
+
+# def config_quality(conf:dict, task:str='quality') -> dict:
+#     config = load_config(task_name=task, **conf)
+#     return config
 
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
-    match task:
-        case 'fallacies':
-            return config_fallacies(conf=conf.get(task), task=task)
-        case 'aduc':
-            return config_aduc(conf=conf.get(task), task=task)
-        case 'claim_detection':
-            return config_claim_detect(conf=conf.get(task), task=task)
-        case 'evidence_detection':
-            return config_evi_detect(conf=conf.get(task), task=task)
-        case 'stance_detection':
-            return config_stance_detect(conf=conf.get(task), task=task)
-        case 'evidence_type':
-            return config_evi_type(conf=conf.get(task), task=task)
-        case 'relation':
-            return config_relation(conf=conf.get(task), task=task)
-        case 'quality':
-            return config_quality(conf=conf.get(task), task=task)
+    return fn_config(task_name=task, **conf.get(task))
+    # match task:
+    #     case 'fallacies':
+    #         return config_fallacies(conf=conf.get(task), task=task)
+    #     case 'aduc':
+    #         return config_aduc(conf=conf.get(task), task=task)
+    #     case 'claim_detection':
+    #         return config_claim_detect(conf=conf.get(task), task=task)
+    #     case 'evidence_detection':
+    #         return config_evi_detect(conf=conf.get(task), task=task)
+    #     case 'stance_detection':
+    #         return config_stance_detect(conf=conf.get(task), task=task)
+    #     case 'evidence_type':
+    #         return config_evi_type(conf=conf.get(task), task=task)
+    #     case 'relation':
+    #         return config_relation(conf=conf.get(task), task=task)
+    #     case 'quality':
+    #         return config_quality(conf=conf.get(task), task=task)
 
 def run(task: str=None):
     if task is not None:
