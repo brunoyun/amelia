@@ -102,3 +102,34 @@ def plot_metric(
         fig.savefig(file_plot, format='png')
     if file_metric is not None:
         df_metric.to_csv(file_metric, header=['F1', 'Precision', 'Recall'])
+        
+def stat_sample(
+    change_lbl,
+    task_name:str,
+    sample_train:pd.DataFrame,
+    sample_val:pd.DataFrame,
+    sample_test:pd.DataFrame,
+    labels:set,
+    savefile:dict
+):
+    plot_stat_sample(
+        change_lbl,
+        sample=sample_train,
+        lst_labels=labels,
+        title=f'{task_name}: Stat Train set',
+        savefile=savefile.get('stat_train')
+    )
+    plot_stat_sample(
+        change_lbl,
+        sample=sample_val,
+        lst_labels=labels,
+        title=f'{task_name}: Stat Validation set',
+        savefile=savefile.get('stat_val')
+    )
+    plot_stat_sample(
+        change_lbl,
+        sample=sample_test,
+        lst_labels=labels,
+        title=f'{task_name}: Stat Test set',
+        savefile=savefile.get('stat_test')
+    )

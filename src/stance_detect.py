@@ -229,7 +229,7 @@ def run_stance_detect(
     training_args,
     max_seq_length:int,
     n_sample:int,
-    spl_name:str,
+    # spl_name:str,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -290,30 +290,39 @@ def run_stance_detect(
     )
     print(f'##### Metrics and plot #####')
     metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
-    plot.plot_stat_sample(
+    plot.stat_sample(
         change_lbl,
-        sample=prt_train,
-        lst_labels=labels,
-        savefile=savefile.get('stat_train'),
-        title=f'stance detection: sample {spl_name} train'
+        task_name='Stance Detection',
+        sample_train=prt_train,
+        sample_val=prt_val,
+        sample_test=prt_test,
+        labels=labels,
+        savefile=savefile
     )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_val,
-        lst_labels=labels,
-        savefile=savefile.get('stat_val'),
-        title=f'stance detection: sample {spl_name} val'
-    )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_test,
-        lst_labels=labels,
-        savefile=savefile.get('stat_test'),
-        title=f'stance detection: sample {spl_name} test'
-    )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_train,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_train'),
+    #     title=f'stance detection: sample {spl_name} train'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_val,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_val'),
+    #     title=f'stance detection: sample {spl_name} val'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_test,
+    #     lst_labels=labels,
+    #     savefile=savefile.get('stat_test'),
+    #     title=f'stance detection: sample {spl_name} test'
+    # )
     plot.plot_metric(
         metric=metric,
-        title=f'stance detection: Scores {n_sample} sample',
+        title=f'Stance Detection: Scores {n_sample} sample',
         file_plot=savefile.get('plot_single'),
         file_metric=savefile.get('metric_single')
     )

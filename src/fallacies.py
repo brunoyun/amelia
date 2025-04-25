@@ -271,7 +271,7 @@ def run_fallacies(
     training_args,
     max_seq_length:int,
     n_sample:int,
-    spl_name:str,
+    # spl_name:str,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -332,27 +332,36 @@ def run_fallacies(
     )
     print(f'##### Metrics and plot #####')
     metric_single, metric_multi = metrics.get_metrics(change_lbl, result_test)
-    plot.plot_stat_sample(
+    plot.stat_sample(
         change_lbl,
-        sample=prt_train,
-        lst_labels=fallacies,
-        savefile=savefile.get('stat_train'),
-        title=f'fallacies: sample {spl_name} train'
+        task_name='Fallacies',
+        sample_train=prt_train,
+        sample_val=prt_val,
+        sample_test=prt_test,
+        labels=fallacies,
+        savefile=savefile
     )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_val,
-        lst_labels=fallacies,
-        savefile=savefile.get('stat_val'),
-        title=f'fallacies: sample {spl_name} val'
-    )
-    plot.plot_stat_sample(
-        change_lbl,
-        sample=prt_test,
-        lst_labels=fallacies,
-        savefile=savefile.get('stat_test'),
-        title=f'Fallacies: sample {spl_name} test'
-    )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_train,
+    #     lst_labels=fallacies,
+    #     savefile=savefile.get('stat_train'),
+    #     title=f'fallacies: sample {spl_name} train'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_val,
+    #     lst_labels=fallacies,
+    #     savefile=savefile.get('stat_val'),
+    #     title=f'fallacies: sample {spl_name} val'
+    # )
+    # plot.plot_stat_sample(
+    #     change_lbl,
+    #     sample=prt_test,
+    #     lst_labels=fallacies,
+    #     savefile=savefile.get('stat_test'),
+    #     title=f'Fallacies: sample {spl_name} test'
+    # )
     plot.plot_metric(
         metric=metric_single,
         title=f'Fallacies: Scores {n_sample} sample single label',

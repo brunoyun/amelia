@@ -212,50 +212,50 @@ def get_spl_datasets(
     df_spl = pd.concat(spl_lst)
     return df_spl
 
-def get_spl(
-    data: pd.DataFrame,
-    labels: set,
-    n_sample: int = 300
-) -> tuple[pd.DataFrame, dict, dict]:
-    """Get a sample of the data
+# def get_spl(
+#     data: pd.DataFrame,
+#     labels: set,
+#     n_sample: int = 300
+# ) -> tuple[pd.DataFrame, dict, dict]:
+#     """Get a sample of the data
 
-    Parameters
-    ----------
-    data : DataFrame
-        data to sample
-    labels : set
-        set of labels in the data
-    n_sample : int, optional
-        number of element to sample in the data, by default 300
+#     Parameters
+#     ----------
+#     data : DataFrame
+#         data to sample
+#     labels : set
+#         set of labels in the data
+#     n_sample : int, optional
+#         number of element to sample in the data, by default 300
 
-    Returns
-    -------
-    DataFrame
-        DataFrame containing the sampled data
-    dict
-        dictionary containing the number of sample per labels
-    dict
-        dictionary containing the number of oversampled element per labels
-    """
-    lst_spl = []
-    oversampled_len_lbls = {}
-    sple_len_lbls = {}
-    nb_spl = int(n_sample / len(labels))
-    nb_element = get_nb_element(data['answer'].to_list())
-    names_dataset = data['datasets'].value_counts().index.to_list()
-    for n in names_dataset:
-        df = data.loc[data['datasets'] == n]
-        df_spl, spl_len, oversample = get_spl_datasets(
-            data=df,
-            labels=labels,
-            n_sample=nb_spl,
-            nb_element=nb_element
-        )
-        oversampled_len_lbls.update({n: oversample})
-        sple_len_lbls.update({n: spl_len})
-        lst_spl.append(df_spl)
-    df_res = pd.concat(lst_spl)
-    return df_res, sple_len_lbls ,oversampled_len_lbls
+#     Returns
+#     -------
+#     DataFrame
+#         DataFrame containing the sampled data
+#     dict
+#         dictionary containing the number of sample per labels
+#     dict
+#         dictionary containing the number of oversampled element per labels
+#     """
+#     lst_spl = []
+#     oversampled_len_lbls = {}
+#     sple_len_lbls = {}
+#     nb_spl = int(n_sample / len(labels))
+#     nb_element = get_nb_element(data['answer'].to_list())
+#     names_dataset = data['datasets'].value_counts().index.to_list()
+#     for n in names_dataset:
+#         df = data.loc[data['datasets'] == n]
+#         df_spl, spl_len, oversample = get_spl_datasets(
+#             data=df,
+#             labels=labels,
+#             n_sample=nb_spl,
+#             nb_element=nb_element
+#         )
+#         oversampled_len_lbls.update({n: oversample})
+#         sple_len_lbls.update({n: spl_len})
+#         lst_spl.append(df_spl)
+#     df_res = pd.concat(lst_spl)
+#     return df_res, sple_len_lbls ,oversampled_len_lbls
 
 def get_all_spl(
     data: dict,
