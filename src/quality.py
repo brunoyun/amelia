@@ -47,12 +47,31 @@ def get_split(
 ) -> tuple[list[dict], list[dict], list[dict]]:
     train_set, val_set, test_set = [], [], []
     for tr in train:
+        for it in tr.get('all_val'):
+            it['spl'] = tr['spl']
         train_set.extend(tr.get('all_val'))
     for v in val:
+        for it in v.get('all_val'):
+            it['spl'] = v['spl']
         val_set.extend(v.get('all_val'))
     for t in test:
+        for it in t.get('all_val'):
+            it['spl'] = t['spl']
         test_set.extend(t.get('all_val'))
     return train_set, val_set, test_set
+
+def get_all_split(data:dict) -> dict:
+    res = {}
+    for k,v in data.items():
+        train, val, test = get_split(v.get('train'), v.get('validation'), v.get('test'))
+        res.update({
+            k: {
+                'train': train,
+                'validation': val,
+                'test': test,
+            }
+        })
+    return res
 
 def load_dagstuhl(path:str) -> dict:
     all_data = []

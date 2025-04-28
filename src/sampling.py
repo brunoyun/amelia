@@ -161,7 +161,8 @@ def get_spl_datasets(
     data: pd.DataFrame,
     labels: set,
     n_sample: int,
-    nb_element: pd.Series
+    nb_element: pd.Series,
+    task:str=None
 ) -> tuple[pd.DataFrame, dict, dict]:
     """Get the sample of one dataset
 
@@ -192,9 +193,25 @@ def get_spl_datasets(
             result_type='broadcast',
             axis=1
         ).dropna()
-        n_sample_label = int(
-            np.round(len(df_tmp) / (nb_element.loc[l]) * n_sample)
-        )
+        if task == 'quality':
+            all_val = []
+            df_all_v = data.apply(
+                lambda x: all_val.extend(x['all_val']),
+                axis=1
+            )
+            df_all = pd.DataFrame().from_records(all_val)
+            tmp = df_all.apply(
+                lambda x: x if l in x['label'] else np.nan,
+                result_type='broadcast',
+                axis=1
+            ).dropna()
+            n_sample_label = int(
+                np.round(len(tmp) / (nb_element.loc[l]) * n_sample)
+            )
+        else:
+            n_sample_label = int(
+                np.round(len(df_tmp) / (nb_element.loc[l]) * n_sample)
+            )
         if (len(df_tmp) - n_sample_label) >= 0:
             df_spl = df_tmp.sample(n=n_sample_label)
             df_over = df_tmp.sample(n=0)
@@ -212,57 +229,13 @@ def get_spl_datasets(
     df_spl = pd.concat(spl_lst)
     return df_spl
 
-# def get_spl(
-#     data: pd.DataFrame,
-#     labels: set,
-#     n_sample: int = 300
-# ) -> tuple[pd.DataFrame, dict, dict]:
-#     """Get a sample of the data
-
-#     Parameters
-#     ----------
-#     data : DataFrame
-#         data to sample
-#     labels : set
-#         set of labels in the data
-#     n_sample : int, optional
-#         number of element to sample in the data, by default 300
-
-#     Returns
-#     -------
-#     DataFrame
-#         DataFrame containing the sampled data
-#     dict
-#         dictionary containing the number of sample per labels
-#     dict
-#         dictionary containing the number of oversampled element per labels
-#     """
-#     lst_spl = []
-#     oversampled_len_lbls = {}
-#     sple_len_lbls = {}
-#     nb_spl = int(n_sample / len(labels))
-#     nb_element = get_nb_element(data['answer'].to_list())
-#     names_dataset = data['datasets'].value_counts().index.to_list()
-#     for n in names_dataset:
-#         df = data.loc[data['datasets'] == n]
-#         df_spl, spl_len, oversample = get_spl_datasets(
-#             data=df,
-#             labels=labels,
-#             n_sample=nb_spl,
-#             nb_element=nb_element
-#         )
-#         oversampled_len_lbls.update({n: oversample})
-#         sple_len_lbls.update({n: spl_len})
-#         lst_spl.append(df_spl)
-#     df_res = pd.concat(lst_spl)
-#     return df_res, sple_len_lbls ,oversampled_len_lbls
-
 def get_all_spl(
     data: dict,
     labels: set,
     n_sample: int=300,
     val_size: float=0.2,
-    test_size: float=0.2
+    test_size: float=0.2,
+    task:str=None
 ) -> dict:
     res = {}
     lst_spl_train, lst_spl_val, lst_spl_test = [], [], []
@@ -279,18 +252,21 @@ def get_all_spl(
             labels=labels,
             n_sample=nb_spl_tr,
             nb_element=nb_elmt_train,
+            task=task
         )
         spl_val = get_spl_datasets(
             data=pd.DataFrame(v.get('validation')),
             labels=labels,
             n_sample=nb_spl_val,
             nb_element=nb_elmt_val,
+            task=task
         )
         spl_test = get_spl_datasets(
             data=pd.DataFrame(v.get('test')),
             labels=labels,
             n_sample=nb_spl_test,
             nb_element=nb_elmt_test,
+            task=task
         )
         lst_spl_train.append(spl_train)
         lst_spl_val.append(spl_val)

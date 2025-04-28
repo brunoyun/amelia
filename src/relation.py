@@ -274,7 +274,7 @@ def load_ibm_pola(path:str) -> dict:
                 'topic': data.get('topicText'),
                 'argument_src': claim.get('sentences'),
                 'argument_trg': data.get('topicText'),
-                'label': unifie_labels(claim.get('label')).split(',') # Pro -> support, Con -> Attack
+                'label': unifie_labels(claim.get('label')).split(',')
             }
             sentences.append(tmp)
     lbl_ibm_pola = spl.get_labels(sentences)
