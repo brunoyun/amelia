@@ -12,8 +12,6 @@ import src.plot as plot
 
 from ast import literal_eval
 
-# The label 'Other' indicates that the edu/adu is neither a Claim or a Premises
-
 def change_lbl(labels: list) -> list:
     return labels
 

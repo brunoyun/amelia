@@ -4,6 +4,7 @@ from transformers import TrainingArguments
 
 import json
 import time
+import datetime
 import numpy as np
 
 from src.fallacies import run_fallacies
@@ -22,20 +23,21 @@ def get_savefile(
     n_sample:int,
     epoch:int,
     train_resp:str,
-    outputs_dir:str
+    outputs_dir:str,
+    time:str
 ) -> dict:
     labels_file = f'./sampled_data/{task_name}/labels.csv'
     train_spl_file = f'./sampled_data/{task_name}/{spl_name}_train.csv'
     val_spl_file = f'./sampled_data/{task_name}/{spl_name}_val.csv'
     test_spl_file = f'./sampled_data/{task_name}/{spl_name}_test.csv'
-    test_result_file = f'./test_res/{task_name}/test_res_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}.csv'
-    file_stat_train = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_train.png'
-    file_stat_val = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_val.png'
-    file_stat_test = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}_stat_test.png'
-    file_plot_single = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_single.png'
-    file_plot_multi = f'./img/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name} {train_resp}_res_multi.png'
-    file_metric_single = f'./test_res/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
-    file_metric_multi = f'./test_res/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_multi.csv'
+    test_result_file = f'./test_res/{task_name}/{time}_test_res_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}.csv'
+    file_stat_train = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_train.png'
+    file_stat_val = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_val.png'
+    file_stat_test = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_test.png'
+    file_plot_single = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_single.png'
+    file_plot_multi = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name} {train_resp}_res_multi.png'
+    file_metric_single = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
+    file_metric_multi = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_multi.csv'
     d_file = {
         'labels_file': labels_file,
         'train_spl_file': train_spl_file,
@@ -134,9 +136,10 @@ def load_training_config(
     save_steps = np.round((n_sample/32)/2)
     spl_name = 'spl2'
     d_file = None
+    time = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
     if do_sample:
-        spl_name = f'spl_{str(time.time()).replace('.', '-')}'
-    outputs_dir = f'./outputs/{task_name}/{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
+        spl_name = f'{time}_spl'
+    outputs_dir = f'./outputs/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
     if save_result:
         d_file = get_savefile(
             task_name=task_name,
@@ -145,7 +148,8 @@ def load_training_config(
             n_sample=n_sample,
             epoch=epoch,
             train_resp=train_resp,
-            outputs_dir=outputs_dir
+            outputs_dir=outputs_dir,
+            time=time
         )
     print(f'##### Load Model and Tokenizer #####')
     model, tokenizer, training_args = load_model(
@@ -170,7 +174,6 @@ def load_training_config(
             'load_in_4bit': load_in_4bit,
             'gpu_mem_use': gpu_mem_use,
             'n_sample': n_sample,
-            # 'spl_name': spl_name,
             'paths': paths,
             'sys_prt': system_prompt,
             'do_sample': do_sample,
@@ -183,7 +186,6 @@ def load_training_config(
             'training_args': training_args,
             'max_seq_length': max_seq_length,
             'n_sample': n_sample,
-            # 'spl_name': spl_name,
             'paths': paths,
             'sys_prt': system_prompt,
             'do_sample': do_sample,
@@ -224,59 +226,10 @@ def fn_config(
         config = load_config_inference(**params)
     return config
 
-# def config_fallacies(conf:dict, task:str='fallacies') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_aduc(conf:dict, task:str='aduc') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_claim_detect(conf:dict, task:str='claim_detection') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_evi_detect(conf:dict, task:str='evidence_detection') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_stance_detect(conf:dict, task:str='stance_detection') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_evi_type(conf:dict, task:str='evidence_type') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_relation(conf:dict, task:str="relation") -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
-# def config_quality(conf:dict, task:str='quality') -> dict:
-#     config = load_config(task_name=task, **conf)
-#     return config
-
 def get_config(task:str=None)->dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
     return fn_config(task_name=task, **conf.get(task))
-    # match task:
-    #     case 'fallacies':
-    #         return config_fallacies(conf=conf.get(task), task=task)
-    #     case 'aduc':
-    #         return config_aduc(conf=conf.get(task), task=task)
-    #     case 'claim_detection':
-    #         return config_claim_detect(conf=conf.get(task), task=task)
-    #     case 'evidence_detection':
-    #         return config_evi_detect(conf=conf.get(task), task=task)
-    #     case 'stance_detection':
-    #         return config_stance_detect(conf=conf.get(task), task=task)
-    #     case 'evidence_type':
-    #         return config_evi_type(conf=conf.get(task), task=task)
-    #     case 'relation':
-    #         return config_relation(conf=conf.get(task), task=task)
-    #     case 'quality':
-    #         return config_quality(conf=conf.get(task), task=task)
 
 def run(task: str=None):
     if task is not None:

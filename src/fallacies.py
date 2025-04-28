@@ -330,6 +330,22 @@ def run_fallacies(
         labels=fallacies,
         result_file=savefile.get('test_result_file')
     )
+    # TODO : save with manual command -> see unsloth doc
+    # model.save_pretrained_gguf(
+    #     './gguf_model/fallacies',
+    #     tokenizer,
+    #     quantization_method='q8_0'
+    # )
+    # model.save_pretrained_gguf(
+    #     './gguf_model/fallacies',
+    #     tokenizer,
+    #     quantization_method='q4_k_m'
+    # )
+    # model.save_pretrained_gguf(
+    #     './gguf_model/fallacies',
+    #     tokenizer,
+    #     quantization_method='q5_k_m'
+    # )
     print(f'##### Metrics and plot #####')
     metric_single, metric_multi = metrics.get_metrics(change_lbl, result_test)
     plot.stat_sample(

@@ -77,11 +77,6 @@ def load_dagstuhl(path:str) -> dict:
         data=sentences,
         lbls=lbl_dag
     )
-    train_set, validation_set, test_set = get_split(
-        train=train_set,
-        val=validation_set,
-        test=test_set
-    )
     res = {
         'train': train_set,
         'validation': validation_set,
@@ -120,7 +115,7 @@ def format_user_prompt(d:dict, labels:set) -> str:
     topic = d.get('topic')
     stance = d.get('stance')
     sentences = d.get('sentences')
-    user_prt = f'[QUALITY]: {labels}\n[TOPIC]: {topic}\n[STANCE]: {stance}\n[DEFINITION]: {d.get('qual_dim')}: {definition}\n[SENTENCE]: {sentences}\n'
+    user_prt = f'[QUALITY]: {labels}\n[TOPIC]: {topic}\n[STANCE]: {stance}\n[DEFINITION]: {d.get("qual_dim")}: {definition}\n[SENTENCE]: {sentences}\n'
     return user_prt
 
 def run_quality(
@@ -138,7 +133,7 @@ def run_quality(
     print(f'##### Load Data #####')
     if do_sample:
         data, labels = load_all_datasets(paths)
-        spl_data = spl.get_all_labels(data, labels, n_sample)
+        spl_data = spl.get_all_spl(data, labels, n_sample)
         prt_train, prt_val, prt_test = prt.get_prt(
             format_user_prompt,
             data=spl_data,

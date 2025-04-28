@@ -75,7 +75,7 @@ def train(
     
 def test(model, tokenizer, data_test, labels, result_file) -> pd.DataFrame:
     FastLanguageModel.for_inference(model)
-    text_streamer = TextStreamer(tokenizer)
+    text_streamer = TextStreamer(tokenizer, skip_prompt=True)
     pred = zero_shot_gen(
         data=data_test,
         model=model,

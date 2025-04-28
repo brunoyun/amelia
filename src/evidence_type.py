@@ -221,7 +221,7 @@ def run_evidence_type(
                 f_metric = f'{f_metric[0]}_{item.name}{f_metric}'
                 print(f'##### Testing for {item.name} #####')
                 chkpt_model, chkpt_tokenizer = FastLanguageModel.from_pretrained(
-                    model_name=f'{savefile.get('outputs_dir')}/{item.name}',
+                    model_name=f'{savefile.get("outputs_dir")}/{item.name}',
                     max_seq_length=max_seq_length,
                     dtype=dtype,
                     load_in_4bit=load_in_4bit,
