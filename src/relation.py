@@ -11,6 +11,7 @@ import src.metrics as metrics
 import src.plot as plot
 
 from ast import literal_eval
+from datasets import Dataset
 
 def change_lbl(labels:list) -> list:
     return labels
@@ -341,13 +342,68 @@ def format_user_prompt(d:dict, labels:set) -> str:
     user_prt = f'[RELATION]: {labels}\n[TOPIC]: {topic}\n[SOURCE]: {argument_src}\n[TARGET]: {argument_trg}\n'
     return user_prt
 
-def run_relation(
+def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
+    data, labels = load_all_datasets(paths)
+    spl_data = spl.get_all_spl(data, labels, n_sample)
+    prt_train, prt_val, prt_test = prt.get_prt(
+        format_user_prompt,
+        data=spl_data,
+        labels=labels,
+        sys_prt=sys_prt
+    )
+    return labels, prt_train, prt_val, prt_test
+
+def get_data(savefile):
+    converter = {'prompt': literal_eval, 'answer': literal_eval}
+    labels = set(
+        pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
+    )
+    prt_train = pd.read_csv(
+        savefile.get('train_spl_file'),
+        converters=converter
+    )
+    prt_val = pd.read_csv(
+        savefile.get('val_spl_file'),
+        converters=converter
+    )
+    prt_test = pd.read_csv(
+        savefile.get('test_spl_file'),
+        converters=converter
+    )
+    return labels, prt_train, prt_val, prt_test
+
+def test_task(
+    model,
+    tokenizer,
+    data_test:Dataset,
+    labels:set,
+    n_sample:int,
+    savefile:dict
+) -> tuple:
+    print(f'##### Testing #####')
+    result_test = tr.test(
+        model=model,
+        tokenizer=tokenizer,
+        data_test=data_test,
+        labels=labels,
+        result_file=savefile.get('test_result_file')
+    )
+    print(f'##### Metrics #####')
+    metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
+    plot.plot_metric(
+        metric=metric,
+        title=f'Relation Classification: Scores {n_sample} sample',
+        file_plot=savefile.get('plot_single'),
+        file_metric=savefile.get('metric_single')
+    )
+    return model, tokenizer
+
+def run_training_relation(
     model,
     tokenizer,
     training_args,
     max_seq_length:int,
     n_sample:int,
-    # spl_name:str,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -355,34 +411,25 @@ def run_relation(
 ):
     print(f'##### Load Data #####')
     if do_sample:
-        data, labels = load_all_datasets(paths)
-        spl_data = spl.get_all_labels(data, labels, n_sample)
-        prt_train, prt_val, prt_test = prt.get_prt(
-            format_user_prompt,
-            data=spl_data,
-            labels=labels,
-            sys_prt=sys_prt
+        labels, prt_train, prt_val, prt_test = load_data(
+            paths=paths,
+            sys_prt=sys_prt,
+            n_sample=n_sample
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)
         prt_test.to_csv(savefile.get('test_spl_file'), index=False)
     else:
-        converter = {'prompt': literal_eval, 'answer': literal_eval}
-        labels = set(
-            pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
-        )
-        prt_train = pd.read_csv(
-            savefile.get('train_spl_file'),
-            converters=converter
-        )
-        prt_val = pd.read_csv(
-            savefile.get('val_spl_file'),
-            converters=converter
-        )
-        prt_test = pd.read_csv(
-            savefile.get('test_spl_file'),
-            converters=converter
-        )
+        labels, prt_train, prt_val, prt_test = get_data(savefile)
+    plot.stat_sample(
+        change_lbl,
+        task_name='Relation Classification',
+        sample_train=prt_train,
+        sample_val=prt_val,
+        sample_test=prt_test,
+        labels=labels,
+        savefile=savefile
+    )
     data_train, data_val, data_test = prt.get_datasets(
         tokenizer=tokenizer,
         train=prt_train,
@@ -398,49 +445,30 @@ def run_relation(
         max_seq_length=max_seq_length,
         training_args=training_args
     )
-    print(f'##### Testing #####')
-    result_test = tr.test(
+    m, t = test_task(
         model=model,
         tokenizer=tokenizer,
         data_test=data_test,
         labels=labels,
-        result_file=savefile.get('test_result_file')
-    )
-    print(f'##### Metrics and plot #####')
-    metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
-    plot.stat_sample(
-        change_lbl,
-        task_name='Relation Classification',
-        sample_train=prt_train,
-        sample_val=prt_val,
-        sample_test=prt_test,
-        labels=labels,
+        n_sample=n_sample,
         savefile=savefile
     )
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_train,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_train'),
-    #     title=f'relation: sample {spl_name} train'
+    return m, t
+
+    # print(f'##### Testing #####')
+    # result_test = tr.test(
+    #     model=model,
+    #     tokenizer=tokenizer,
+    #     data_test=data_test,
+    #     labels=labels,
+    #     result_file=savefile.get('test_result_file')
     # )
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_val,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_val'),
-    #     title=f'relation: sample {spl_name} val'
+    # print(f'##### Metrics and plot #####')
+    # metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
+    # plot.plot_metric(
+    #     metric=metric,
+    #     title=f'Relation Classification: Scores {n_sample} sample',
+    #     file_plot=savefile.get('plot_single'),
+    #     file_metric=savefile.get('metric_single')
     # )
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_test,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_test'),
-    #     title=f'relation: sample {spl_name} test'
-    # )
-    plot.plot_metric(
-        metric=metric,
-        title=f'Relation Classification: Scores {n_sample} sample',
-        file_plot=savefile.get('plot_single'),
-        file_metric=savefile.get('metric_single')
-    )
+    # return model, tokenizer

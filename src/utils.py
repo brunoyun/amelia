@@ -7,14 +7,14 @@ import time
 import datetime
 import numpy as np
 
-from src.fallacies import run_fallacies
-from src.aduc import run_aduc
-from src.claim_detect import run_claim_detect
-from src.evidence_detect import run_evidence_detect
-from src.stance_detect import run_stance_detect
-from src.evidence_type import run_evidence_type
-from src.relation import run_relation
-from src.quality import run_quality
+from src.fallacies import run_training_fallacies
+from src.aduc import run_training_aduc
+from src.claim_detect import run_training_claim_detect
+from src.evidence_detect import run_training_evidence_detect
+from src.stance_detect import run_training_stance_detect
+from src.evidence_type import run_training_evidence_type
+from src.relation import run_training_relation
+from src.quality import run_training_quality
 
 def get_savefile(
     task_name:str,
@@ -226,30 +226,45 @@ def fn_config(
         config = load_config_inference(**params)
     return config
 
-def get_config(task:str=None)->dict:
+def get_config(task:str=None, do_training:bool=False) -> dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
-    return fn_config(task_name=task, **conf.get(task))
+    return fn_config(task_name=task, do_training=do_training, **conf.get(task))
 
-def run(task: str=None):
+def run_training(task: str=None, do_training: bool=False):
     if task is not None:
-        config = get_config(task)
+        config = get_config(task=task, do_training=do_training)
         match task:
             case 'fallacies':
-                run_fallacies(**config)
+                model, tokenizer = run_training_fallacies(**config)
             case 'aduc':
-                run_aduc(**config)
+                model, tokenizer = run_training_aduc(**config)
             case 'claim_detection':
-                run_claim_detect(**config)
+                model, tokenizer = run_training_claim_detect(**config)
             case 'evidence_detection':
-                run_evidence_detect(**config)
+                model, tokenizer = run_training_evidence_detect(**config)
             case 'stance_detection':
-                run_stance_detect(**config)
+                model, tokenizer = run_training_stance_detect(**config)
             case 'evidence_type':
-                run_evidence_type(**config)
+                model, tokenizer = run_training_evidence_type(**config)
             case 'relation':
-                run_relation(**config)
+                model, tokenizer = run_training_relation(**config)
             case 'quality':
-                run_quality(**config)
+                model, tokenizer = run_training_quality(**config)
+        return model, tokenizer
     else:
         print(f'Error while getting config for task {task}')
+
+def run_inference(task:str=None):
+    if task is not None:
+        config = get_config(task=task, do_training=False)
+        print(f'Model Inference')
+
+def run(task: str=None, do_training:bool=False) -> tuple[any,any] | None:
+    if task is not None:
+        if do_training:
+            model, tokenizer = run_training(task=task, do_training=do_training)
+            return model, tokenizer
+        else:
+            run_inference(task=task)
+    

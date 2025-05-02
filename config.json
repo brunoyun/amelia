@@ -1,6 +1,5 @@
 {
     "fallacies": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -22,7 +21,6 @@
         "params": {}
     },
     "aduc": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -46,7 +44,6 @@
         "params": {}
     },
     "claim_detection": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -69,7 +66,6 @@
         "params": {}
     },
     "evidence_detection": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -92,7 +88,6 @@
         "params": {}
     },
     "stance_detection": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -116,7 +111,6 @@
         "params": {}
     },
     "evidence_type": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length" : 2048,
@@ -139,7 +133,6 @@
         "params": {}
     },
     "relation": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
@@ -167,7 +160,6 @@
         "params": {}
     },
     "quality": {
-        "do_training": true,
         "training_params": {
             "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,

@@ -149,7 +149,37 @@ def format_user_prompt(d:dict, labels:set) -> str:
     user_prt = f'[TYPE]: {labels}\n[TOPIC]: {topic}\n[CLAIM]: {claim}\n[SENTENCE]: {sentence}\n'
     return user_prt
 
-def run_evidence_type(
+def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
+    data, labels = load_all_datasets(paths)
+    spl_data = spl.get_all_spl(data, labels, n_sample)
+    prt_train, prt_val, prt_test = prt.get_prt(
+        format_user_prompt,
+        data=spl_data,
+        labels=labels,
+        sys_prt=sys_prt
+    )
+    return labels, prt_train, prt_val, prt_test
+
+def get_data(savefile:dict) -> tuple:
+    converter = {'prompt': literal_eval, 'answer': literal_eval}
+    labels = set(
+        pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
+    )
+    prt_train = pd.read_csv(
+        savefile.get('train_spl_file'),
+        converters=converter
+    )
+    prt_val = pd.read_csv(
+        savefile.get('val_spl_file'),
+        converters=converter
+    )
+    prt_test = pd.read_csv(
+        savefile.get('test_spl_file'),
+        converters=converter
+    )
+    return labels, prt_train, prt_val, prt_test
+
+def run_training_evidence_type(
     model,
     tokenizer,
     training_args,
@@ -158,7 +188,6 @@ def run_evidence_type(
     load_in_4bit:bool,
     gpu_mem_use:float,
     n_sample:int,
-    # spl_name:str,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -166,34 +195,25 @@ def run_evidence_type(
 ):
     print(f'##### Load Data #####')
     if do_sample:
-        data, labels = load_all_datasets(paths)
-        spl_data = spl.get_all_spl(data, labels, n_sample)
-        prt_train, prt_val, prt_test = prt.get_prt(
-            format_user_prompt,
-            data=spl_data,
-            labels=labels,
-            sys_prt=sys_prt
+        labels, prt_train, prt_val, prt_test = load_data(
+            paths=paths,
+            sys_prt=sys_prt,
+            n_sample=n_sample
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)
         prt_test.to_csv(savefile.get('test_spl_file'), index=False)
     else:
-        converter = {'prompt': literal_eval, 'answer': literal_eval}
-        labels = set(
-            pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
-        )
-        prt_train = pd.read_csv(
-            savefile.get('train_spl_file'),
-            converters=converter
-        )
-        prt_val = pd.read_csv(
-            savefile.get('val_spl_file'),
-            converters=converter
-        )
-        prt_test = pd.read_csv(
-            savefile.get('test_spl_file'),
-            converters=converter
-        )
+        labels, prt_train, prt_val, prt_test = get_data(savefile)
+    plot.stat_sample(
+        change_lbl,
+        task_name='Evidence Type',
+        sample_train=prt_train,
+        sample_val=prt_val,
+        sample_test=prt_test,
+        labels=labels,
+        savefile=savefile
+    )
     data_train, data_val, data_test = prt.get_datasets(
         tokenizer=tokenizer,
         train=prt_train,
@@ -228,7 +248,6 @@ def run_evidence_type(
                     fast_inference=True,
                     gpu_memory_utilization=gpu_mem_use
                 )
-                
                 result_test = tr.test(
                     model=chkpt_model,
                     tokenizer=chkpt_tokenizer,
@@ -250,16 +269,8 @@ def run_evidence_type(
                 )
             del chkpt_model
             del chkpt_tokenizer
-    plot.stat_sample(
-        change_lbl,
-        task_name='Evidence Type',
-        sample_train=prt_train,
-        sample_val=prt_val,
-        sample_test=prt_test,
-        labels=labels,
-        savefile=savefile
-    )
-
+    
+    # TODO : return the best model 
     # print(f'##### Testing #####')
     # result_test = tr.test(
     #     model=model,
