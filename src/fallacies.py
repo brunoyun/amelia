@@ -277,7 +277,7 @@ def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
     return labels, prt_train, prt_val, prt_test
 
 def get_data(savefile:dict) -> tuple:
-    converter = {'prompt': literal_eval, 'answer': literal_eval}
+    converter = {'conversations': literal_eval, 'answer': literal_eval}
     fallacies = set(
         pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
     )
@@ -336,7 +336,8 @@ def run_training_fallacies(
     paths:dict,
     sys_prt:str,
     do_sample:bool,
-    savefile:dict
+    savefile:dict,
+    chat_template:str
 ) -> tuple:
     print(f'##### Load data #####')
     if do_sample:
@@ -363,7 +364,8 @@ def run_training_fallacies(
         tokenizer=tokenizer, 
         train=prt_train,
         val=prt_val,
-        test=prt_test
+        test=prt_test,
+        chat_template=chat_template
     )
     print('##### Training #####')
     tr.train(
@@ -383,26 +385,3 @@ def run_training_fallacies(
         savefile=savefile
     )
     return m, t
-
-    # print(f'##### Testing #####')
-    # result_test = tr.test(
-    #     model=model,
-    #     tokenizer=tokenizer,
-    #     data_test=data_test,
-    #     labels=fallacies,
-    #     result_file=savefile.get('test_result_file')
-    # )
-    # print(f'##### Metrics and plot #####')
-    # metric_single, metric_multi = metrics.get_metrics(change_lbl, result_test)
-    # plot.plot_metric(
-    #     metric=metric_single,
-    #     title=f'Fallacies: Scores {n_sample} sample single label',
-    #     file_plot=savefile.get('plot_single'),
-    #     file_metric=savefile.get('metric_single')
-    # )
-    # plot.plot_metric(
-    #     metric=metric_multi,
-    #     title=f'Fallacies: Scores {n_sample} sample multi labels',
-    #     file_plot=savefile.get('plot_multi'),
-    #     file_metric=savefile.get('metric_multi')
-    # )

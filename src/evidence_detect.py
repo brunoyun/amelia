@@ -135,7 +135,7 @@ def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
     return labels, prt_train, prt_val, prt_test
 
 def get_data(savefile:dict) -> tuple:
-    converter = {'prompt': literal_eval, 'answer': literal_eval}
+    converter = {'conversations': literal_eval, 'answer': literal_eval}
     labels = set(
         pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
     )
@@ -188,7 +188,8 @@ def run_training_evidence_detect(
     paths:dict,
     sys_prt:str,
     do_sample:bool,
-    savefile:dict
+    savefile:dict,
+    chat_template:str
 ):
     print(f'##### Load Data #####')
     if do_sample:
@@ -215,7 +216,8 @@ def run_training_evidence_detect(
         tokenizer=tokenizer,
         train=prt_train,
         val=prt_val,
-        test=prt_test
+        test=prt_test,
+        chat_template=chat_template
     )
     print(f'##### Training #####')
     tr.train(
@@ -235,21 +237,3 @@ def run_training_evidence_detect(
         savefile=savefile
     )
     return m, t
-    
-    # print(f'##### Testing #####')
-    # result_test = tr.test(
-    #     model=model,
-    #     tokenizer=tokenizer,
-    #     data_test=data_test,
-    #     labels=labels,
-    #     result_file=savefile.get('test_result_file')
-    # )
-    # print(f'##### Metrics and Plot #####')
-    # metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
-    # plot.plot_metric(
-    #     metric=metric,
-    #     title=f'Evidence Detection: Scores {n_sample} sample',
-    #     file_plot=savefile.get('plot_single'),
-    #     file_metric=savefile.get('metric_single')
-    # )
-    # return model, tokenizer

@@ -38,7 +38,7 @@ def zero_shot_gen(
     text_streamer: TextStreamer
 ) -> list:
     res= []
-    prompt = data['prompt']
+    prompt = data['conversations']
     for prt in prompt:
         out = gen(prt, model, tokenizer, text_streamer)
         decoded_out = tokenizer.batch_decode(out)

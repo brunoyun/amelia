@@ -1,3 +1,4 @@
+from unsloth import apply_chat_template
 from datasets import Dataset
 import pandas as pd
 
@@ -38,7 +39,7 @@ def get_prt_train_val(
                     'datasets': names,
                     'spl': d.get('spl'),
                     'single_ans': i,
-                    'prompt': [
+                    'conversations': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
                          'content': format_user_prompt(d, labels)},
@@ -53,7 +54,7 @@ def get_prt_train_val(
                 'datasets': names,
                 'spl': d.get('spl'),
                 'single_ans': d.get('label'),
-                'prompt': [
+                'conversations': [
                     {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': format_user_prompt(d, labels)},
                     {'role': 'assistant',
@@ -97,7 +98,7 @@ def get_prt_test(
                     'datasets': names,
                     'spl': d.get('spl'),
                     'single_ans': i,
-                    'prompt': [
+                    'conversations': [
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user',
                          'content': format_user_prompt(d, labels)},
@@ -110,7 +111,7 @@ def get_prt_test(
                 'datasets': names,
                 'spl': d.get('spl'),
                 'single_ans': d.get('label'),
-                'prompt': [
+                'conversations': [
                     {'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': format_user_prompt(d, labels)},
                 ],
@@ -194,18 +195,36 @@ def get_datasets(
     tokenizer,
     train:pd.DataFrame,
     val:pd.DataFrame,
-    test:pd.DataFrame
+    test:pd.DataFrame,
+    chat_template:str
 )->tuple[Dataset, Dataset, Dataset]:
-    data_train = Dataset.from_pandas(train).map(
-        lambda x: formatting_prompt(tokenizer, x),
-        batched=True
+    data_train = apply_chat_template(
+        Dataset.from_pandas(train),
+        tokenizer=tokenizer,
+        chat_template=chat_template
     )
-    data_val = Dataset.from_pandas(val).map(
-        lambda x: formatting_prompt(tokenizer, x),
-        batched=True
+    data_val = apply_chat_template(
+        Dataset.from_pandas(val),
+        tokenizer=tokenizer,
+        chat_template=chat_template
     )
-    data_test = Dataset.from_pandas(test).map(
-        lambda x: formatting_prompt(tokenizer, x),
-        batched=True
-    ).shuffle(seed=0)
+    data_test = apply_chat_template(
+        Dataset.from_pandas(test),
+        tokenizer=tokenizer,
+        chat_template=chat_template
+    )
     return data_train, data_val, data_test
+
+    # data_train = Dataset.from_pandas(train).map(
+    #     lambda x: formatting_prompt(tokenizer, x),
+    #     batched=True
+    # )
+    # data_val = Dataset.from_pandas(val).map(
+    #     lambda x: formatting_prompt(tokenizer, x),
+    #     batched=True
+    # )
+    # data_test = Dataset.from_pandas(test).map(
+    #     lambda x: formatting_prompt(tokenizer, x),
+    #     batched=True
+    # ).shuffle(seed=0)
+    # return data_train, data_val, data_test

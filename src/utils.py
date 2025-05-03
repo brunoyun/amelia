@@ -55,6 +55,17 @@ def get_savefile(
     }
     return d_file
 
+def get_templates() -> str:
+    chat_template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+{SYSTEM}<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{INPUT}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+{OUTPUT}<|eot_id|>"""
+    return chat_template
+    
+
 def load_model(
     model_name:str,
     max_seq_length:int,
@@ -177,7 +188,8 @@ def load_training_config(
             'paths': paths,
             'sys_prt': system_prompt,
             'do_sample': do_sample,
-            'savefile': d_file
+            'savefile': d_file,
+            'chat_template': get_templates()
         }
     else:
         config = {
@@ -189,7 +201,8 @@ def load_training_config(
             'paths': paths,
             'sys_prt': system_prompt,
             'do_sample': do_sample,
-            'savefile': d_file
+            'savefile': d_file,
+            'chat_template': get_templates()
         }
     return config
 
