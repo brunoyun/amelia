@@ -189,7 +189,9 @@ def run_training_evidence_detect(
     sys_prt:str,
     do_sample:bool,
     savefile:dict,
-    chat_template:str
+    chat_template:str,
+    save_model: bool,
+    quantization: str
 ):
     print(f'##### Load Data #####')
     if do_sample:
@@ -217,7 +219,8 @@ def run_training_evidence_detect(
         train=prt_train,
         val=prt_val,
         test=prt_test,
-        chat_template=chat_template
+        chat_template=chat_template,
+        sys_prt=sys_prt
     )
     print(f'##### Training #####')
     tr.train(
@@ -236,4 +239,6 @@ def run_training_evidence_detect(
         n_sample=n_sample,
         savefile=savefile
     )
+    if save_model:
+        tr.save_model(savefile.get('model_dir'), m, t, quantization)
     return m, t

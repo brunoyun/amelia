@@ -68,12 +68,12 @@ def train(
     )
     trainer = train_on_responses_only(
         trainer,
-        instruction_part="<|start_header_id|>user<|end_header_id|>\n\n",
-        response_part="<|start_header_id|>assistant<|end_header_id|>\n\n"
+        # instruction_part="<|start_header_id|>user<|end_header_id|>\n\n",
+        # response_part="<|start_header_id|>assistant<|end_header_id|>\n\n"
     )
     unsloth_train(trainer)
     
-def test(model, tokenizer, data_test, labels, result_file) -> pd.DataFrame:
+def test(model, tokenizer, data_test, labels, result_file=None) -> pd.DataFrame:
     FastLanguageModel.for_inference(model)
     text_streamer = TextStreamer(tokenizer, skip_prompt=True)
     pred = zero_shot_gen(
@@ -89,5 +89,13 @@ def test(model, tokenizer, data_test, labels, result_file) -> pd.DataFrame:
     pred_flat = list(itertools.chain.from_iterable(tmp_pred))
     d_res = {'names': names_dataset, 'pred': pred_flat, 'lbl': true_labels}
     df_res = pd.DataFrame(data=d_res)
-    df_res.to_csv(result_file, index=False)
+    if result_file is not None:
+        df_res.to_csv(result_file, index=False)
     return df_res
+
+def save_model(directory, model, tokenizer, quantization:str) -> None:
+    model.save_pretrained_gguf(
+        directory,
+        tokenizer,
+        quantization_method=quantization
+    )

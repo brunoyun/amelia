@@ -38,6 +38,7 @@ def get_savefile(
     file_plot_multi = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name} {train_resp}_res_multi.png'
     file_metric_single = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
     file_metric_multi = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_multi.csv'
+    model_dir = f'./gguf_model/{task_name}'
     d_file = {
         'labels_file': labels_file,
         'train_spl_file': train_spl_file,
@@ -51,7 +52,8 @@ def get_savefile(
         'plot_multi': file_plot_multi,
         'metric_single': file_metric_single,
         'metric_multi': file_metric_multi,
-        'outputs_dir': outputs_dir
+        'outputs_dir': outputs_dir,
+        'model_dir': model_dir
     }
     return d_file
 
@@ -128,18 +130,19 @@ def load_model(
 def load_training_config(
     task_name:str,
     model_name:str,
-    max_seq_length:int,
-    dtype,
-    load_in_4bit:bool,
-    gpu_mem_use:float,
-    r_lora:int,
-    n_sample:int,
-    epoch:int,
-    n_eval:int,
     paths:dict,
     system_prompt:str,
-    save_result:bool,
-    do_sample:bool,
+    max_seq_length:int=2048,
+    dtype=None,
+    load_in_4bit:bool=True,
+    gpu_mem_use:float=0.6,
+    r_lora:int=16,
+    n_sample:int=4000,
+    epoch:int=2,
+    n_eval:int=8,
+    do_sample:bool=True,
+    save_model:bool=True,
+    quantization:str=None
 ) -> dict:
     m_name = model_name.split('/')[1]
     train_resp = '_train_resp'
@@ -151,17 +154,16 @@ def load_training_config(
     if do_sample:
         spl_name = f'{time}_spl'
     outputs_dir = f'./outputs/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
-    if save_result:
-        d_file = get_savefile(
-            task_name=task_name,
-            spl_name=spl_name,
-            m_name=m_name,
-            n_sample=n_sample,
-            epoch=epoch,
-            train_resp=train_resp,
-            outputs_dir=outputs_dir,
-            time=time
-        )
+    d_file = get_savefile(
+        task_name=task_name,
+        spl_name=spl_name,
+        m_name=m_name,
+        n_sample=n_sample,
+        epoch=epoch,
+        train_resp=train_resp,
+        outputs_dir=outputs_dir,
+        time=time
+    )
     print(f'##### Load Model and Tokenizer #####')
     model, tokenizer, training_args = load_model(
         model_name=model_name,
@@ -189,7 +191,9 @@ def load_training_config(
             'sys_prt': system_prompt,
             'do_sample': do_sample,
             'savefile': d_file,
-            'chat_template': get_templates()
+            'chat_template': get_templates(),
+            'save_model': save_model,
+            'quantization': quantization
         }
     else:
         config = {
@@ -202,7 +206,9 @@ def load_training_config(
             'sys_prt': system_prompt,
             'do_sample': do_sample,
             'savefile': d_file,
-            'chat_template': get_templates()
+            'chat_template': get_templates(),
+            'save_model': save_model,
+            'quantization': quantization
         }
     return config
 
@@ -280,4 +286,3 @@ def run(task: str=None, do_training:bool=False) -> tuple[any,any] | None:
             return model, tokenizer
         else:
             run_inference(task=task)
-    

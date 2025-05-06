@@ -196,35 +196,25 @@ def get_datasets(
     train:pd.DataFrame,
     val:pd.DataFrame,
     test:pd.DataFrame,
-    chat_template:str
+    chat_template:str,
+    sys_prt:str
 )->tuple[Dataset, Dataset, Dataset]:
     data_train = apply_chat_template(
         Dataset.from_pandas(train),
         tokenizer=tokenizer,
-        chat_template=chat_template
+        chat_template=chat_template,
+        default_system_message=sys_prt
     )
     data_val = apply_chat_template(
         Dataset.from_pandas(val),
         tokenizer=tokenizer,
-        chat_template=chat_template
+        chat_template=chat_template,
+        default_system_message=sys_prt
     )
     data_test = apply_chat_template(
-        Dataset.from_pandas(test),
+        Dataset.from_pandas(test).shuffle(seed=0),
         tokenizer=tokenizer,
-        chat_template=chat_template
+        chat_template=chat_template,
+        default_system_message=sys_prt
     )
     return data_train, data_val, data_test
-
-    # data_train = Dataset.from_pandas(train).map(
-    #     lambda x: formatting_prompt(tokenizer, x),
-    #     batched=True
-    # )
-    # data_val = Dataset.from_pandas(val).map(
-    #     lambda x: formatting_prompt(tokenizer, x),
-    #     batched=True
-    # )
-    # data_test = Dataset.from_pandas(test).map(
-    #     lambda x: formatting_prompt(tokenizer, x),
-    #     batched=True
-    # ).shuffle(seed=0)
-    # return data_train, data_val, data_test

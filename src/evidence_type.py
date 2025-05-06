@@ -4,6 +4,7 @@ import itertools
 import random
 import re
 import os
+import time
 import pandas as pd
 import numpy as np
 
@@ -192,7 +193,9 @@ def run_training_evidence_type(
     sys_prt:str,
     do_sample:bool,
     savefile:dict,
-    chat_template:str
+    chat_template:str,
+    save_model: bool,
+    quantization: str
 ):
     print(f'##### Load Data #####')
     if do_sample:
@@ -220,7 +223,8 @@ def run_training_evidence_type(
         train=prt_train,
         val=prt_val,
         test=prt_test,
-        chat_template=chat_template
+        chat_template=chat_template,
+        sys_prt=sys_prt
     )
     print(f'##### Training #####')
     tr.train(
@@ -269,9 +273,14 @@ def run_training_evidence_type(
                     file_plot=f_plot,
                     file_metric=f_metric
                 )
+                print(f'checkpoint : test result saved')
             del chkpt_model
             del chkpt_tokenizer
-    
+            # To delete after test of different checkpoint
+            print(f'Checkpoint : model and tokenizer deleted')
+            time.sleep(30)
+            print(f'Next Checkpoint')
+    return 'model not return yet', 'tokenizer not return yet'
     # TODO : return the best model 
     # print(f'##### Testing #####')
     # result_test = tr.test(
