@@ -422,17 +422,25 @@ def run_training_relation(
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)
         prt_test.to_csv(savefile.get('test_spl_file'), index=False)
+        plot.stat_sample(
+            change_lbl,
+            task_name='Relation Classification',
+            sample_train=prt_train,
+            sample_val=prt_val,
+            sample_test=prt_test,
+            labels=labels,
+            savefile=savefile
+        )
     else:
         labels, prt_train, prt_val, prt_test = get_data(savefile)
-    plot.stat_sample(
-        change_lbl,
-        task_name='Relation Classification',
-        sample_train=prt_train,
-        sample_val=prt_val,
-        sample_test=prt_test,
-        labels=labels,
-        savefile=savefile
-    )
+        plot.stat_sample(
+            change_lbl,
+            task_name='Relation Classification',
+            sample_train=prt_train,
+            sample_val=prt_val,
+            sample_test=prt_test,
+            labels=labels,
+        )
     data_train, data_val, data_test = prt.get_datasets(
         tokenizer=tokenizer,
         train=prt_train,

@@ -15,6 +15,7 @@ import src.metrics as metrics
 import src.plot as plot
 
 from ast import literal_eval
+from datasets import Dataset
 
 def change_lbl(labels: list) -> list:
     return labels
@@ -180,14 +181,37 @@ def get_data(savefile:dict) -> tuple:
     )
     return labels, prt_train, prt_val, prt_test
 
+def test_task(
+    model,
+    tokenizer,
+    data_test:Dataset,
+    labels:set,
+    n_sample:int,
+    savefile:dict
+) -> tuple:
+    print(f'##### Testing #####')
+    result_test = tr.test(
+        model=model,
+        tokenizer=tokenizer,
+        data_test=data_test,
+        labels=labels,
+        result_file=savefile.get('test_result_file')
+    )
+    print(f'##### Metrics #####')
+    metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
+    plot.plot_metric(
+        metric=metric,
+        title=f'Evidence Type: Scores {n_sample} sample',
+        file_plot=savefile.get('plot_single'),
+        file_metric=savefile.get('metric_single')
+    )
+    return model, tokenizer
+
 def run_training_evidence_type(
     model,
     tokenizer,
     training_args,
     max_seq_length:int,
-    dtype,
-    load_in_4bit:bool,
-    gpu_mem_use:float,
     n_sample:int,
     paths:dict,
     sys_prt:str,
@@ -207,17 +231,25 @@ def run_training_evidence_type(
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)
         prt_test.to_csv(savefile.get('test_spl_file'), index=False)
+        plot.stat_sample(
+            change_lbl,
+            task_name='Evidence Type',
+            sample_train=prt_train,
+            sample_val=prt_val,
+            sample_test=prt_test,
+            labels=labels,
+            savefile=savefile
+        )
     else:
         labels, prt_train, prt_val, prt_test = get_data(savefile)
-    plot.stat_sample(
-        change_lbl,
-        task_name='Evidence Type',
-        sample_train=prt_train,
-        sample_val=prt_val,
-        sample_test=prt_test,
-        labels=labels,
-        savefile=savefile
-    )
+        plot.stat_sample(
+            change_lbl,
+            task_name='Evidence Type',
+            sample_train=prt_train,
+            sample_val=prt_val,
+            sample_test=prt_test,
+            labels=labels
+        )
     data_train, data_val, data_test = prt.get_datasets(
         tokenizer=tokenizer,
         train=prt_train,
@@ -235,87 +267,14 @@ def run_training_evidence_type(
         max_seq_length=max_seq_length,
         training_args=training_args
     )
-    del model
-    with os.scandir(savefile.get('outputs_dir')) as sc_it:
-        for item in sc_it:
-            if 'checkpoint' in item.name:
-                f_res = re.split('(.csv)', savefile.get('test_result_file'))
-                f_res = f'{f_res[0]}_{item.name}{f_res[1]}'
-                f_plot = re.split('(.png)', savefile.get('plot_single'))
-                f_plot = f'{f_plot[0]}_{item.name}{f_plot[1]}'
-                f_metric = re.split('(.csv)', savefile.get('metric_single'))
-                f_metric = f'{f_metric[0]}_{item.name}{f_metric}'
-                print(f'##### Testing for {item.name} #####')
-                chkpt_model, chkpt_tokenizer = FastLanguageModel.from_pretrained(
-                    model_name=f'{savefile.get("outputs_dir")}/{item.name}',
-                    max_seq_length=max_seq_length,
-                    dtype=dtype,
-                    load_in_4bit=load_in_4bit,
-                    fast_inference=True,
-                    gpu_memory_utilization=gpu_mem_use
-                )
-                result_test = tr.test(
-                    model=chkpt_model,
-                    tokenizer=chkpt_tokenizer,
-                    data_test=data_test,
-                    labels=labels,
-                    result_file=f_res
-                )
-                print(f'##### Metrics and plot for {item.name} #####')
-                metric_single, _ = metrics.get_metrics(
-                    change_lbl,
-                    data=result_test,
-                    is_multi_lbl=False
-                )
-                plot.plot_metric(
-                    metric=metric_single,
-                    title=f'Evidence Type: Scores {n_sample} sample single label',
-                    file_plot=f_plot,
-                    file_metric=f_metric
-                )
-                print(f'checkpoint : test result saved')
-            del chkpt_model
-            del chkpt_tokenizer
-            # To delete after test of different checkpoint
-            print(f'Checkpoint : model and tokenizer deleted')
-            time.sleep(30)
-            print(f'Next Checkpoint')
-    return 'model not return yet', 'tokenizer not return yet'
-    # TODO : return the best model 
-    # print(f'##### Testing #####')
-    # result_test = tr.test(
-    #     model=model,
-    #     tokenizer=tokenizer,
-    #     data_test=data_test,
-    #     labels=labels,
-    #     result_file=savefile.get('test_result_file')
-    # )
-    # print(f'##### Metrics and plot #####')
-    # metric, _ = metrics.get_metrics(change_lbl, result_test, is_multi_lbl=False)
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_train,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_train'),
-    #     title=f'evidence type: sample {spl_name} train'
-    # )
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_val,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_val'),
-    #     title=f'evidence type: sample {spl_name} val'
-    # )
-    # plot.plot_stat_sample(
-    #     change_lbl,
-    #     sample=prt_test,
-    #     lst_labels=labels,
-    #     savefile=savefile.get('stat_test'),
-    #     title=f'evidence type: sample {spl_name} test'
-    # )
-    # plot.plot_metric(
-    #     metric=metric,
-    #     title=f'evidence type: Scores {n_sample} sample',
-    #     file_plot=savefile.get('plot_single'),
-    #     file_metric=savefile.get('metric_single')
-    # )
+    m, t = test_task(
+        model=model,
+        tokenizer=tokenizer,
+        data_test=data_test,
+        labels=labels,
+        n_sample=n_sample,
+        savefile=savefile
+    )
+    if save_model:
+        tr.save_model(savefile.get('model_dir'), m, t, quantization)
+    return m, t 

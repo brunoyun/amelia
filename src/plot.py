@@ -110,7 +110,7 @@ def stat_sample(
     sample_val:pd.DataFrame,
     sample_test:pd.DataFrame,
     labels:set,
-    savefile:dict
+    savefile:dict=None
 ):
     plot_stat_sample(
         change_lbl,

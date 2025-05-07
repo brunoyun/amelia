@@ -30,9 +30,9 @@ def get_savefile(
     val_spl_file = f'./sampled_data/{task_name}/{spl_name}_val.csv'
     test_spl_file = f'./sampled_data/{task_name}/{spl_name}_test.csv'
     test_result_file = f'./test_res/{task_name}/{time}_test_res_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}.csv'
-    file_stat_train = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_train.png'
-    file_stat_val = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_val.png'
-    file_stat_test = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}_stat_test.png'
+    file_stat_train = f'./img/{task_name}/{n_sample}spl_{spl_name}_stat_train.png'
+    file_stat_val = f'./img/{task_name}/{n_sample}spl_{spl_name}_stat_val.png'
+    file_stat_test = f'./img/{task_name}/{n_sample}spl_{spl_name}_stat_test.png'
     file_plot_single = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_single.png'
     file_plot_multi = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name} {train_resp}_res_multi.png'
     file_metric_single = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
@@ -176,39 +176,20 @@ def load_training_config(
         n_eval_step=n_eval_step,
         r_lora=r_lora
     )
-    if task_name == 'evidence_type':
-        config = {
-            'model': model,
-            'tokenizer': tokenizer,
-            'training_args': training_args,
-            'max_seq_length': max_seq_length,
-            'dtype': dtype,
-            'load_in_4bit': load_in_4bit,
-            'gpu_mem_use': gpu_mem_use,
-            'n_sample': n_sample,
-            'paths': paths,
-            'sys_prt': system_prompt,
-            'do_sample': do_sample,
-            'savefile': d_file,
-            'chat_template': get_templates(),
-            'save_model': save_model,
-            'quantization': quantization
-        }
-    else:
-        config = {
-            'model': model,
-            'tokenizer': tokenizer,
-            'training_args': training_args,
-            'max_seq_length': max_seq_length,
-            'n_sample': n_sample,
-            'paths': paths,
-            'sys_prt': system_prompt,
-            'do_sample': do_sample,
-            'savefile': d_file,
-            'chat_template': get_templates(),
-            'save_model': save_model,
-            'quantization': quantization
-        }
+    config = {
+        'model': model,
+        'tokenizer': tokenizer,
+        'training_args': training_args,
+        'max_seq_length': max_seq_length,
+        'n_sample': n_sample,
+        'paths': paths,
+        'sys_prt': system_prompt,
+        'do_sample': do_sample,
+        'savefile': d_file,
+        'chat_template': get_templates(),
+        'save_model': save_model,
+        'quantization': quantization
+    }
     return config
 
 def load_config_inference(
