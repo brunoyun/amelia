@@ -23,6 +23,8 @@ target/
 *.pyc
 
 unsloth_compiled_cache/
+_unsloth_temporary_saved_buffers/
+_unsloth_sentencepiece_temp/
 outputs/
 img/
 test_res/

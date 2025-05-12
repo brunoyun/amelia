@@ -47,7 +47,7 @@ def unifie_labels(label: str) -> str:
     else:
         return label
 
-def load_pe(path:str) -> dict:
+def load_pe(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -64,7 +64,9 @@ def load_pe(path:str) -> dict:
     lbls_pe = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbls_pe
+        lbls=lbls_pe,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -74,7 +76,7 @@ def load_pe(path:str) -> dict:
     }
     return res
 
-def load_abstrct_neo(path:str) -> dict:
+def load_abstrct_neo(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -91,7 +93,9 @@ def load_abstrct_neo(path:str) -> dict:
     lbls_abst = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbls_abst
+        lbls=lbls_abst,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -147,7 +151,7 @@ def load_abstrct_mixed(
     }
     return res
 
-def load_mtp1(path:str) -> dict:
+def load_mtp1(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -169,6 +173,8 @@ def load_mtp1(path:str) -> dict:
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbl_mtp1,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -179,7 +185,7 @@ def load_mtp1(path:str) -> dict:
     return res
         
 
-def load_mtp2(path:str) -> dict:
+def load_mtp2(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -202,6 +208,8 @@ def load_mtp2(path:str) -> dict:
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
         lbls=lbl_mtp2,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -211,12 +219,16 @@ def load_mtp2(path:str) -> dict:
     }
     return res
 
-def load_all_datasets(paths: dict) -> tuple[dict, set]:
+def load_all_datasets(
+    paths: dict,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple[dict, set]:
     res = {
-        'mtp1': load_mtp1(paths.get('mtp1')),
-        'mtp2': load_mtp2(paths.get('mtp2')),
-        'pe': load_pe(paths.get('pe')),
-        'abstrct': load_abstrct_neo(paths.get('abstrct')),
+        'mtp1': load_mtp1(paths.get('mtp1'), val_size, test_size),
+        'mtp2': load_mtp2(paths.get('mtp2'), val_size, test_size),
+        'pe': load_pe(paths.get('pe'), val_size, test_size),
+        'abstrct': load_abstrct_neo(paths.get('abstrct'), val_size, test_size),
     }
     labels = spl.get_all_labels(res)
     return res, labels
@@ -231,8 +243,14 @@ def format_user_prompt(d:dict, labels:set) -> str:
     user_prt = f'[TOPIC]: {topic}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
-    data, labels = load_all_datasets(paths)
+def load_data(
+    paths:dict,
+    sys_prt:str,
+    n_sample:int,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple:
+    data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
         format_user_prompt,
@@ -293,6 +311,8 @@ def run_training_aduc(
     training_args,
     max_seq_length:int,
     n_sample:int,
+    val_size:float,
+    test_size:float,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -306,7 +326,9 @@ def run_training_aduc(
         labels, prt_train, prt_val, prt_test = load_data(
             paths=paths,
             sys_prt=sys_prt,
-            n_sample=n_sample
+            n_sample=n_sample,
+            val_size=val_size,
+            test_size=test_size
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)

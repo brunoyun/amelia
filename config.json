@@ -10,6 +10,8 @@
             "n_sample": 4000,
             "epoch":2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "cocolofa": "./Data_jsonl/cocolofa.jsonl",
                 "mafalda": "./Data_jsonl/mafalda.jsonl"
@@ -32,6 +34,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "pe": "./Data_jsonl/perssuasive_essays.jsonl",
                 "abstrct": "./Data_jsonl/abstrct_neoplasm.jsonl",
@@ -56,6 +60,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "iam_claim": "./Data_jsonl/iam_claim.jsonl",
                 "ibm_claim": "./Data_jsonl/ibm_claim.jsonl",
@@ -79,6 +85,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "argsum": "./Data_jsonl/argsum_evidence_cls.jsonl",
                 "iam_evi": "./Data_jsonl/iam_evidence.jsonl",
@@ -102,6 +110,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "ibm_claim_pola": "./Data_jsonl/ibm_claim_polarity.jsonl",
                 "comarg": "./Data_jsonl/comarg.jsonl",
@@ -126,6 +136,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "ibm_type": "./Data_jsonl/ibm_type.jsonl",
                 "aqm": "./Data_jsonl/aqm.jsonl",
@@ -149,6 +161,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "mtp1": "./Data_jsonl/microtext_p1.jsonl",
                 "mtp2": "./Data_jsonl/microtext_p2.jsonl",
@@ -177,6 +191,8 @@
             "n_sample": 4000,
             "epoch": 2,
             "n_eval": 8,
+            "val_size": 0.2,
+            "test_size": 0.2,
             "paths": {
                 "dagsthul": "./Data_jsonl/dagstuhl.jsonl"
             },

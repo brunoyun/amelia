@@ -22,7 +22,11 @@ def unifie_labels(label:str) -> str:
     else:
         return label
 
-def load_argsum_evi_cls(path:str) -> dict:
+def load_argsum_evi_cls(
+    path:str,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -39,7 +43,9 @@ def load_argsum_evi_cls(path:str) -> dict:
     lbl_argsum_evi = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_argsum_evi
+        lbls=lbl_argsum_evi,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -49,7 +55,7 @@ def load_argsum_evi_cls(path:str) -> dict:
     }
     return res
 
-def load_iam_evi(path:str) -> dict:
+def load_iam_evi(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -65,7 +71,9 @@ def load_iam_evi(path:str) -> dict:
     lbl_iam_evi = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_iam_evi
+        lbls=lbl_iam_evi,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -75,7 +83,7 @@ def load_iam_evi(path:str) -> dict:
     }
     return res
 
-def load_ibm_evi(path:str) -> dict:
+def load_ibm_evi(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -91,7 +99,9 @@ def load_ibm_evi(path:str) -> dict:
     lbl_ibm_evi = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_ibm_evi
+        lbls=lbl_ibm_evi,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -101,11 +111,15 @@ def load_ibm_evi(path:str) -> dict:
     }
     return res
 
-def load_all_datasets(paths:dict) -> tuple[dict, set]:
+def load_all_datasets(
+    paths:dict,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple[dict, set]:
     res = {
-        'argsum': load_argsum_evi_cls(paths.get('argsum')),
-        'iam_evi': load_iam_evi(paths.get('iam_evi')),
-        'ibm_evi': load_ibm_evi(paths.get('ibm_evi'))
+        'argsum': load_argsum_evi_cls(paths.get('argsum'), val_size, test_size),
+        'iam_evi': load_iam_evi(paths.get('iam_evi'), val_size, test_size),
+        'ibm_evi': load_ibm_evi(paths.get('ibm_evi'), val_size, test_size)
     }
     labels = spl.get_all_labels(res)
     return res, labels
@@ -123,8 +137,14 @@ def format_user_prompt(d:dict, labels:set) -> str:
     user_prt = f'[TOPIC]: {topic}\n[ARGUMENT]: {argument}\n[SENTENCE]: {sentences}\n'
     return user_prt
 
-def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
-    data, labels = load_all_datasets(paths)
+def load_data(
+    paths:dict,
+    sys_prt:str,
+    n_sample:int,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple:
+    data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
         format_user_prompt,
@@ -185,6 +205,8 @@ def run_training_evidence_detect(
     training_args,
     max_seq_length:int,
     n_sample:int,
+    val_size:float,
+    test_size:float,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -198,7 +220,9 @@ def run_training_evidence_detect(
         labels, prt_train, prt_val, prt_test = load_data(
             paths=paths,
             sys_prt=sys_prt,
-            n_sample=n_sample
+            n_sample=n_sample,
+            val_size=val_size,
+            test_size=test_size
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)

@@ -34,7 +34,7 @@ def get_savefile(
     file_stat_val = f'./img/{task_name}/{n_sample}spl_{spl_name}_stat_val.png'
     file_stat_test = f'./img/{task_name}/{n_sample}spl_{spl_name}_stat_test.png'
     file_plot_single = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_single.png'
-    file_plot_multi = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name} {train_resp}_res_multi.png'
+    file_plot_multi = f'./img/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_res_multi.png'
     file_metric_single = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_single.csv'
     file_metric_multi = f'./test_res/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}_metric_multi.csv'
     model_dir = f'./gguf_model/{task_name}'
@@ -139,6 +139,8 @@ def load_training_config(
     n_sample:int=4000,
     epoch:int=2,
     n_eval:int=8,
+    val_size:float=0.2,
+    test_size:float=0.2,
     do_sample:bool=True,
     save_model:bool=True,
     quantization:str=None
@@ -182,6 +184,8 @@ def load_training_config(
         'training_args': training_args,
         'max_seq_length': max_seq_length,
         'n_sample': n_sample,
+        'val_size': val_size,
+        'test_size': test_size,
         'paths': paths,
         'sys_prt': system_prompt,
         'do_sample': do_sample,

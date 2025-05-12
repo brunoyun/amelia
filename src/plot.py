@@ -117,19 +117,19 @@ def stat_sample(
         sample=sample_train,
         lst_labels=labels,
         title=f'{task_name}: Stat Train set',
-        savefile=savefile.get('stat_train')
+        savefile=savefile.get('stat_train') if savefile is not None else None
     )
     plot_stat_sample(
         change_lbl,
         sample=sample_val,
         lst_labels=labels,
         title=f'{task_name}: Stat Validation set',
-        savefile=savefile.get('stat_val')
+        savefile=savefile.get('stat_val') if savefile is not None else None
     )
     plot_stat_sample(
         change_lbl,
         sample=sample_test,
         lst_labels=labels,
         title=f'{task_name}: Stat Test set',
-        savefile=savefile.get('stat_test')
+        savefile=savefile.get('stat_test') if savefile is not None else None
     )

@@ -48,7 +48,7 @@ def map_aqm(labels:list, sentences:list) -> list:
         res.append(tmp)
     return res
 
-def load_ibm_type(path:str) -> dict:
+def load_ibm_type(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -65,7 +65,9 @@ def load_ibm_type(path:str) -> dict:
     lbl_ibm_type = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_ibm_type
+        lbls=lbl_ibm_type,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -75,7 +77,7 @@ def load_ibm_type(path:str) -> dict:
     }
     return res
 
-def load_aqm(path:str) -> dict:
+def load_aqm(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -94,7 +96,9 @@ def load_aqm(path:str) -> dict:
     lbl_aqm = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_aqm
+        lbls=lbl_aqm,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -104,7 +108,7 @@ def load_aqm(path:str) -> dict:
     }
     return res
 
-def load_argsum(path:str) -> dict:
+def load_argsum(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -122,7 +126,9 @@ def load_argsum(path:str) -> dict:
     lbl_argsum = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbl_argsum
+        lbls=lbl_argsum,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -132,11 +138,15 @@ def load_argsum(path:str) -> dict:
     }
     return res
 
-def load_all_datasets(paths:dict) -> tuple[dict, set]:
+def load_all_datasets(
+    paths:dict,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple[dict, set]:
     res = {
-        'ibm_type': load_ibm_type(paths.get('ibm_type')),
-        'aqm': load_aqm(paths.get('aqm')),
-        'argsum': load_argsum(paths.get('argsum')),
+        'ibm_type': load_ibm_type(paths.get('ibm_type'), val_size, test_size),
+        'aqm': load_aqm(paths.get('aqm'), val_size, test_size),
+        'argsum': load_argsum(paths.get('argsum'), val_size, test_size),
     }
     labels = spl.get_all_labels(res)
     return res, labels
@@ -151,8 +161,14 @@ def format_user_prompt(d:dict, labels:set) -> str:
     user_prt = f'[TYPE]: {labels}\n[TOPIC]: {topic}\n[CLAIM]: {claim}\n[SENTENCE]: {sentence}\n'
     return user_prt
 
-def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
-    data, labels = load_all_datasets(paths)
+def load_data(
+    paths:dict,
+    sys_prt:str,
+    n_sample:int,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple:
+    data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
         format_user_prompt,
@@ -213,6 +229,8 @@ def run_training_evidence_type(
     training_args,
     max_seq_length:int,
     n_sample:int,
+    val_size:float,
+    test_size:float,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -226,7 +244,9 @@ def run_training_evidence_type(
         labels, prt_train, prt_val, prt_test = load_data(
             paths=paths,
             sys_prt=sys_prt,
-            n_sample=n_sample
+            n_sample=n_sample,
+            val_size=val_size,
+            test_size=test_size
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)

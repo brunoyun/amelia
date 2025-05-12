@@ -98,7 +98,7 @@ def get_parent_comment(comments: list[dict], id: str) -> str:
         if i.get('id') == id:
             return i.get('comment')
 
-def load_cocolofa(path: str) -> dict:
+def load_cocolofa(path: str, val_size:float=0.2, test_size:float=0.2) -> dict:
     """Load the CoCoLoFa dataset
 
     Parameters
@@ -143,7 +143,9 @@ def load_cocolofa(path: str) -> dict:
     lbls_cocolofa = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbls_cocolofa
+        lbls=lbls_cocolofa,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train': train_set,
@@ -153,7 +155,7 @@ def load_cocolofa(path: str) -> dict:
     }
     return res
 
-def load_mafalfa(path: str) -> dict:
+def load_mafalfa(path: str, val_size:float=0.2, test_size:float=0.2) -> dict:
     """Load the MAFALDA dataset
 
     Parameters
@@ -192,7 +194,9 @@ def load_mafalfa(path: str) -> dict:
     lbls_mafalda = spl.get_labels(sentences)
     train_set, validation_set, test_set = spl.get_train_val_test_split(
         data=sentences,
-        lbls=lbls_mafalda
+        lbls=lbls_mafalda,
+        val_size=val_size,
+        test_size=test_size
     )
     res = {
         'train' : train_set,
@@ -202,7 +206,11 @@ def load_mafalfa(path: str) -> dict:
     }
     return res
 
-def load_all_datasets(paths: dict) -> tuple[dict, set]:
+def load_all_datasets(
+    paths: dict,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple[dict, set]:
     """Load all datasets specified in the paths dictionary
 
     Parameters
@@ -226,8 +234,8 @@ def load_all_datasets(paths: dict) -> tuple[dict, set]:
         set of labels of the data
     """
     res = {
-        'cocolofa': load_cocolofa(paths.get('cocolofa')),
-        'mafalda': load_mafalfa(paths.get('mafalda'))
+        'cocolofa': load_cocolofa(paths.get('cocolofa'), val_size, test_size),
+        'mafalda': load_mafalfa(paths.get('mafalda'), val_size, test_size)
     }
     labels = spl.get_all_labels(res)
     # labels = get_lbls_inter(res)
@@ -265,14 +273,20 @@ def format_user_prompt(d: dict, labels: set) -> str:
 
 # Run Training and Testing
 
-def load_data(paths:dict, sys_prt:str, n_sample:int) -> tuple:
-    data, labels = load_all_datasets(paths)
+def load_data(
+    paths:dict,
+    sys_prt:str,
+    n_sample:int,
+    val_size:float=0.2,
+    test_size:float=0.2
+) -> tuple:
+    data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
         format_user_prompt,
         data=spl_data,
         labels=labels,
-        sys_prt=sys_prt
+        sys_prt=sys_prt,
     )
     return labels, prt_train, prt_val, prt_test
 
@@ -333,6 +347,8 @@ def run_training_fallacies(
     training_args,
     max_seq_length:int,
     n_sample:int,
+    val_size:float,
+    test_size:float,
     paths:dict,
     sys_prt:str,
     do_sample:bool,
@@ -346,7 +362,9 @@ def run_training_fallacies(
         fallacies, prt_train, prt_val, prt_test = load_data(
             paths=paths,
             sys_prt=sys_prt,
-            n_sample=n_sample
+            n_sample=n_sample,
+            val_size=val_size,
+            test_size=test_size
         )
         prt_train.to_csv(savefile.get('train_spl_file'), index=False)
         prt_val.to_csv(savefile.get('val_spl_file'), index=False)
