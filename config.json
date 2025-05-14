@@ -1,7 +1,7 @@
 {
     "fallacies": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -25,7 +25,7 @@
     },
     "aduc": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -51,7 +51,7 @@
     },
     "claim_detection": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -76,7 +76,7 @@
     },
     "evidence_detection": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -101,7 +101,7 @@
     },
     "stance_detection": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -127,7 +127,7 @@
     },
     "evidence_type": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length" : 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -152,7 +152,7 @@
     },
     "relation": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -182,7 +182,7 @@
     },
     "quality": {
         "training_params": {
-            "model_name": "meta-llama/meta-Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
