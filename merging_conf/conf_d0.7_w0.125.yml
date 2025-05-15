@@ -1,0 +1,39 @@
+models:
+  - model: meta-llama/meta-Llama-3.1-8B-Instruct # base model
+  - model: ./outputs/aduc/2025-05-07_17:29:07_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # ADUC Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/claim_detection/2025-05-09_14:57:11_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # CD Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/evidence_detection/2025-05-09_15:51:24_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # ED Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/evidence_type/2025-05-12_10:47:06_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # ET Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/fallacies/2025-05-09_16:41:44_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-340 # FD Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/relation/2025-05-09_18:41:38_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # ARC Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/stance_detection/2025-05-12_08:59:05_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # SD Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+  - model: ./outputs/quality/2025-05-12_09:44:16_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250 # AQ Model
+    parameters:
+      density: 0.7
+      weight: 0.125
+merge_method: dare_ties
+base_model: meta-llama/meta-Llama-3.1-8B-Instruct
+parameters:
+  int8_mask: true
+dtype: bfloat16
