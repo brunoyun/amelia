@@ -1,7 +1,7 @@
 {
     "fallacies": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -25,7 +25,7 @@
     },
     "aduc": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -51,7 +51,7 @@
     },
     "claim_detection": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -76,7 +76,7 @@
     },
     "evidence_detection": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -101,7 +101,7 @@
     },
     "stance_detection": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -118,7 +118,7 @@
                 "iam_stance": "./Data_jsonl/iam_stance.jsonl",
                 "aqm": "./Data_jsonl/aqm.jsonl"
             },
-            "system_prompt": "You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is For, Against or neutral. Utilize the [TOPIC] as context to support your decision\nYour answer must be in the following format with only For, Against or neutral in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+            "system_prompt": "You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is For or Against. Utilize the [TOPIC] as context to support your decision\nYour answer must be in the following format with only For or Against in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
@@ -127,7 +127,7 @@
     },
     "evidence_type": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length" : 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -152,7 +152,7 @@
     },
     "relation": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,
@@ -182,7 +182,7 @@
     },
     "quality": {
         "training_params": {
-            "model_name": "unsloth/Llama-3.1-8B-Instruct",
+            "model_name": "unsloth/Meta-Llama-3.1-8B-Instruct",
             "max_seq_length": 2048,
             "dtype": null,
             "load_in_4bit": true,

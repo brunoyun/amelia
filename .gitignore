@@ -29,4 +29,6 @@ outputs/
 img/
 test_res/
 gguf_model/
+saved_model/
+merged_model/
 to_del/
