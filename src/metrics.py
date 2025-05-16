@@ -44,10 +44,12 @@ def get_metrics_single(change_lbl, data, labels):
     fn = 0
     fp = 0
     res = {}
+    data['pred'] = data['pred'].str.lower()
+    data['lbl'] = data['lbl'].apply(lambda x: [i.lower() for i in x])
     for l in labels:
-        df_on_pred = data[data['pred'] == l[0]]
+        df_on_pred = data[data['pred'] == l[0].lower()]
         df_on_label = data.apply(
-            lambda x: x if l[0] in x['lbl'] else np.nan,
+            lambda x: x if l[0].lower() in x['lbl'] else np.nan,
             result_type='broadcast',
             axis = 1
         ).dropna()
@@ -74,9 +76,11 @@ def get_metrics_multi(change_lbl, data, labels):
     fn = 0
     fp = 0
     res = {}
+    data['pred'] = data['pred'].str.lower()
+    data['lbl'] = data['lbl'].apply(lambda x: [i.lower() for i in x])
     for l in labels:
         df_pred_lbl = data.apply(
-            lambda x: x if x['lbl'] == l else np.nan,
+            lambda x: x if x['lbl'] == l.lower() else np.nan,
             result_type='broadcast',
             axis=1
         ).dropna()
