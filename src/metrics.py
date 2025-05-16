@@ -80,7 +80,7 @@ def get_metrics_multi(change_lbl, data, labels):
     data['lbl'] = data['lbl'].apply(lambda x: [i.lower() for i in x])
     for l in labels:
         df_pred_lbl = data.apply(
-            lambda x: x if x['lbl'] == l.lower() else np.nan,
+            lambda x: x if x['lbl'] == [i.lower() for i in l] else np.nan,
             result_type='broadcast',
             axis=1
         ).dropna()

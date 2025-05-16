@@ -29,7 +29,7 @@ def format_output(answer: list, labels: set) -> list:
     labels = {lbl.lower() for lbl in labels}
     tmp = re.split(s, answer[0])
     pred = [i for i in tmp if i.lower() in labels]
-    print(f'pred : {pred}')
+    print(f'## Prediction : {pred} ##')
     return pred
 
 def zero_shot_gen(
