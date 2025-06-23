@@ -1,0 +1,47 @@
+models:
+  - model: unsloth/Llama-3.1-8B-Instruct # base model
+  - model: ../gguf_model/aduc # ADUC Model
+    parameters:
+      density: 0.85
+      epsilon: 0.1
+      weight: 0.15
+  - model: ../gguf_model/claim_detection # CD Model
+    parameters:
+      density: 0.8
+      epsilon: 0.15
+      weight: 0.03
+  - model: ../gguf_model/evidence_detection # ED Model
+    parameters:
+      density: 0.8
+      epsilon: 0.15
+      weight: 0.03
+  - model: ../gguf_model/evidence_type # ET Model
+    parameters:
+      density: 0.9
+      epsilon: 0.05
+      weight: 0.2
+  - model: ../gguf_model/fallacies # FD Model
+    parameters:
+      density: 0.85
+      epsilon: 0.1
+      weight: 0.16
+  - model: ../gguf_model/relation # ARC Model
+    parameters:
+      density: 0.9
+      epsilon: 0.05
+      weight: 0.2
+  - model: ../gguf_model/stance_detection # SD Model
+    parameters:
+      density: 0.8
+      epsilon: 0.15
+      weight: 0.03
+  - model: ../gguf_model/quality # AQ Model
+    parameters:
+      density: 0.9
+      epsilon: 0.05
+      weight: 0.2
+merge_method: della
+base_model: unsloth/Llama-3.1-8B-Instruct
+parameters:
+  int8_mask: true
+dtype: bfloat16

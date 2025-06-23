@@ -25,10 +25,15 @@ def gen(p, model, tokenizer, text_streamer):
     return output
 
 def format_output(answer: list, labels: set) -> list:
-    s = '<[|]ANSWER[|]>'
+    # s = '<[|]ANSWER[|]>'
+    s = r'<\|ANSWER\|>(.*?)<\|(ANSWER|eot_id)\|>'
     labels = {lbl.lower() for lbl in labels}
     tmp = re.split(s, answer[0])
-    pred = [i for i in tmp if i.lower() in labels]
+    pred = [
+        re.sub(r'[^\w\s_-]','',i)
+        for i in tmp
+        if re.sub(r'[^\w\s_-]','',i).lower() in labels
+    ]
     print(f'## Prediction : {pred} ##')
     return pred
 

@@ -14,6 +14,7 @@ from src.stance_detect import run_training_stance_detect
 from src.evidence_type import run_training_evidence_type
 from src.relation import run_training_relation
 from src.quality import run_training_quality
+from src.mt_ft import run_mt_training
 
 def get_savefile(
     task_name:str,
@@ -75,8 +76,8 @@ def load_model(
     gpu_mem_use:float,
     epoch:float,
     outputs_dir:str,
-    save_steps:int,
-    n_eval_step:int,
+    save_steps:int | None=None,
+    n_eval_step:int | None=None,
     r_lora:int=16,
 ):
     model, tokenizer = FastLanguageModel.from_pretrained(
@@ -119,10 +120,10 @@ def load_model(
         seed = 3407,
         output_dir = outputs_dir,
         save_strategy='steps',
-        save_steps=save_steps,
+        save_steps=save_steps if save_steps != None else 500,
         report_to = "tensorboard", # Use this for WandB etc
-        eval_strategy="steps",
-        eval_steps=n_eval_step,
+        eval_strategy="steps" if n_eval_step != None else "no",
+        eval_steps=n_eval_step if n_eval_step != None else None,
     )
     return model, tokenizer, training_args
 
@@ -143,15 +144,16 @@ def load_training_config(
     test_size:float=0.2,
     do_sample:bool=True,
     save_model:bool=True,
-    quantization:str=None
+    quantization:str | None=None
 ) -> dict:
     m_name = model_name.split('/')[1]
     train_resp = '_train_resp'
-    n_eval_step = np.floor((n_sample/32)/n_eval)
-    save_steps = np.round((n_sample/32)/2)
+    if n_eval != 0:
+        n_eval_step = np.floor((n_sample/32)/n_eval)
+        save_steps = np.round((n_sample/32)/2)
     spl_name = 'spl2'
     d_file = None
-    time = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    time = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
     if do_sample:
         spl_name = f'{time}_spl'
     outputs_dir = f'./outputs/{task_name}/{time}_{m_name}_{epoch}e{n_sample}{spl_name}{train_resp}'
@@ -166,34 +168,56 @@ def load_training_config(
         time=time
     )
     print(f'##### Load Model and Tokenizer #####')
-    model, tokenizer, training_args = load_model(
-        model_name=model_name,
-        max_seq_length=max_seq_length,
-        dtype=dtype,
-        load_in_4bit=load_in_4bit,
-        gpu_mem_use=gpu_mem_use,
-        epoch=epoch,
-        outputs_dir=outputs_dir,
-        save_steps=save_steps,
-        n_eval_step=n_eval_step,
-        r_lora=r_lora
-    )
-    config = {
-        'model': model,
-        'tokenizer': tokenizer,
-        'training_args': training_args,
-        'max_seq_length': max_seq_length,
-        'n_sample': n_sample,
-        'val_size': val_size,
-        'test_size': test_size,
-        'paths': paths,
-        'sys_prt': system_prompt,
-        'do_sample': do_sample,
-        'savefile': d_file,
-        'chat_template': get_templates(),
-        'save_model': save_model,
-        'quantization': quantization
-    }
+    if task_name != 'mt_ft':
+        model, tokenizer, training_args = load_model(
+            model_name=model_name,
+            max_seq_length=max_seq_length,
+            dtype=dtype,
+            load_in_4bit=load_in_4bit,
+            gpu_mem_use=gpu_mem_use,
+            epoch=epoch,
+            outputs_dir=outputs_dir,
+            save_steps=save_steps,
+            n_eval_step=n_eval_step,
+            r_lora=r_lora
+        )
+        config = {
+            'model': model,
+            'tokenizer': tokenizer,
+            'training_args': training_args,
+            'max_seq_length': max_seq_length,
+            'n_sample': n_sample,
+            'val_size': val_size,
+            'test_size': test_size,
+            'paths': paths,
+            'sys_prt': system_prompt,
+            'do_sample': do_sample,
+            'savefile': d_file,
+            'chat_template': get_templates(),
+            'save_model': save_model,
+            'quantization': quantization
+        }
+    else:
+        model, tokenizer, training_args = load_model(
+            model_name=model_name,
+            max_seq_length=max_seq_length,
+            dtype=dtype,
+            load_in_4bit=load_in_4bit,
+            gpu_mem_use=gpu_mem_use,
+            epoch=epoch,
+            outputs_dir=outputs_dir,
+            r_lora=r_lora
+        )
+        config={
+            'model': model,
+            'tokenizer': tokenizer,
+            'training_args': training_args,
+            'max_seq_length': max_seq_length,
+            'savefile': d_file,
+            'chat_template': get_templates(),
+            'save_model': save_model,
+            'quantization': quantization
+        }
     return config
 
 def load_config_inference(
@@ -254,6 +278,8 @@ def run_training(task: str=None, do_training: bool=False):
                 model, tokenizer = run_training_relation(**config)
             case 'quality':
                 model, tokenizer = run_training_quality(**config)
+            case 'mt_ft':
+                model, tokenizer = run_mt_training(**config)
         return model, tokenizer
     else:
         print(f'Error while getting config for task {task}')

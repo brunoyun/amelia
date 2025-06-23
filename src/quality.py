@@ -120,7 +120,7 @@ def load_all_datasets(
 
 def format_user_prompt(d:dict, labels:set) -> str:
     qual_def = {
-        'overall quality': 'Argumentation quality in total',
+        'overall_quality': 'Argumentation quality in total',
         'local_acceptability': 'A premise of an argument is acceptable if it is rationally worthy of being believed to be true',
         'appropriateness': "Argumentation has an appropriate style if the used language supports the creation of credibility and emotions as well as if it is proportional to the issue",
         'arrangement': "Argumentation is arranged properly if it presents the issue, the arguments, and its conclusion in the right order",
