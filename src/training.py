@@ -24,7 +24,7 @@ def gen(p, model, tokenizer, text_streamer):
     )
     return output
 
-def format_output(answer: list, labels: set) -> list:
+def format_output(answer: list, labels: set, few_shot:bool=False) -> list:
     # s = '<[|]ANSWER[|]>'
     s = r'<\|ANSWER\|>(.*?)<\|(ANSWER|eot_id)\|>'
     labels = {lbl.lower() for lbl in labels}
@@ -34,6 +34,12 @@ def format_output(answer: list, labels: set) -> list:
         for i in tmp
         if re.sub(r'[^\w\s_-]','',i).lower() in labels
     ]
+    if few_shot:
+        if len(pred) <= len(labels):
+            pred = []
+        else:
+            print(f'## Few-shot : {pred} ##')
+            pred = [pred[-1]]
     print(f'## Prediction : {pred} ##')
     return pred
 
@@ -42,14 +48,15 @@ def zero_shot_gen(
     model,
     tokenizer,
     labels:set,
-    text_streamer: TextStreamer
+    text_streamer: TextStreamer,
+    few_shot:bool=False,
 ) -> list:
     res= []
     prompt = data['conversations']
     for prt in prompt:
         out = gen(prt, model, tokenizer, text_streamer)
         decoded_out = tokenizer.batch_decode(out)
-        pred = format_output(decoded_out, labels)
+        pred = format_output(decoded_out, labels, few_shot)
         res.append(pred)
     return res
 
@@ -80,7 +87,14 @@ def train(
     )
     unsloth_train(trainer)
     
-def test(model, tokenizer, data_test, labels, result_file=None) -> pd.DataFrame:
+def test(
+    model,
+    tokenizer,
+    data_test,
+    labels,
+    result_file=None,
+    few_shot:bool=False
+) -> pd.DataFrame:
     FastLanguageModel.for_inference(model)
     text_streamer = TextStreamer(tokenizer, skip_prompt=True)
     pred = zero_shot_gen(
@@ -88,7 +102,8 @@ def test(model, tokenizer, data_test, labels, result_file=None) -> pd.DataFrame:
         model=model,
         tokenizer=tokenizer,
         labels=labels,
-        text_streamer=text_streamer
+        text_streamer=text_streamer, 
+        few_shot=few_shot,
     )
     names_dataset = data_test['datasets']
     true_labels = data_test['answer']

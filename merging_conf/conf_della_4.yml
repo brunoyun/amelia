@@ -1,46 +1,46 @@
 models:
   - model: unsloth/Llama-3.1-8B-Instruct # base model
-  - model: ../gguf_model/aduc # ADUC Model
+  - model: ../gguf_model/aduc/Llama-3.1-Amelia-ADUC-8B-v1 # ADUC Model
     parameters:
       density: 0.7
       epsilon: 0.25
       weight: 0.15
-  - model: ../gguf_model/claim_detection # CD Model
+  - model: ../gguf_model/claim_detection/Llama-3.1-Amelia-CD-8B-v1 # CD Model
     parameters:
       density: 0.4
       epsilon: 0.3
       weight: 0.03
-  - model: ../gguf_model/evidence_detection # ED Model
+  - model: ../gguf_model/evidence_detection/Llama-3.1-Amelia-ED-8B-v1 # ED Model
     parameters:
       density: 0.4
       epsilon: 0.3
       weight: 0.03
-  - model: ../gguf_model/evidence_type # ET Model
+  - model: ../gguf_model/evidence_type/Llama-3.1-Amelia-ET-8B-v1 # ET Model
     parameters:
       density: 0.9
       epsilon: 0.05
       weight: 0.2
-  - model: ../gguf_model/fallacies # FD Model
+  - model: ../gguf_model/fallacies/Llama-3.1-Amelia-FD-8B-v1 # FD Model
     parameters:
       density: 0.8
       epsilon: 0.15
       weight: 0.16
-  - model: ../gguf_model/relation # ARC Model
+  - model: ../gguf_model/relation/Llama-3.1-Amelia-AR-8B-v1 # ARC Model
     parameters:
       density: 0.9
       epsilon: 0.05
       weight: 0.2
-  - model: ../gguf_model/stance_detection # SD Model
+  - model: ../gguf_model/stance_detection/Llama-3.1-Amelia-SD-8B-v1 # SD Model
     parameters:
       density: 0.4
       epsilon: 0.3
       weight: 0.03
-  - model: ../gguf_model/quality # AQ Model
+  - model: ../gguf_model/quality/Llama-3.1-Amelia-AQA-8B-v1 # AQ Model
     parameters:
       density: 0.9
       epsilon: 0.05
       weight: 0.2
-merge_method: della
+merge_method: della_linear
 base_model: unsloth/Llama-3.1-8B-Instruct
 parameters:
   int8_mask: true

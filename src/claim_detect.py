@@ -93,7 +93,7 @@ def load_ibm_argument(
     for data in all_data:
         tmp = {
             'topic': data.get('topic'),
-            'sentence': data.get('sentence'),
+            'sentences': data.get('sentence'),
             'text': data.get('context'),
             'label': unifie_labels(data.get('label')).split(','),
         }
