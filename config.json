@@ -67,7 +67,7 @@
                 "ibm_claim": "./Data_jsonl/ibm_claim.jsonl",
                 "ibm_args": "./Data_jsonl/ibm_argument.jsonl"
             },
-            "system_prompt": "You are an expert in argumentation. Your task is to determiner whether the given [SENTENCE] is a Claim or Non-claim. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Non-claim in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
+            "system_prompt": "You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is a Claim or Non-claim. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Non-claim in the answer section:\n<|ANSWER|><answer><|ANSWER|>.",
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
