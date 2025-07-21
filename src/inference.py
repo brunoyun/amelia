@@ -46,7 +46,7 @@ def get_ft_model(task_name:str):
         'relation': f'./gguf_model/relation/Llama-3.1-Amelia-AR-8B-v1',
         'stance_detection': f'./gguf_model/stance_detection/Llama-3.1-Amelia-SD-8B-v1',
         'quality': f'./gguf_model/quality/Llama-3.1-Amelia-AQA-8B-v1',
-        'mt_ft': f'./gguf_model/mt_ft',
+        'mt_ft': f'./gguf_model/mt_ft/Llama-3.1-Amelia-MTFT-8B-v1',
     }
     return st_model.get(task_name)
 
@@ -93,6 +93,21 @@ def get_examples_ed():
     ]
     return ex
 
+def get_examples_et():
+    ex = [
+         {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should we cancel the standardized test for university entrance\n[CLAIM]: “Standardized tests can level the playing field for low-income and rural college applicants,” writes Rich Saunders for the Chronicle of Higher Education.\n[SENTENCE]: Still, some say that standardized testing is one of the most objective measures currently at schools disposal for assessing student achievement and potential.\n"},
+         {'role': 'assistant', 'content': '<|ANSWER|>NONE<|ANSWER|>.'},
+         {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should we ban beauty pageants?\n[CLAIM]: They promote local economic opportunities.\n[SENTENCE]: Miss America 1999 because the first winner with diabetes and publicized the use of an insulin pump.\n"},
+         {'role': 'assistant', 'content': '<|ANSWER|>ANECDOTAL<|ANSWER|>.'},
+         {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should abortion be prohibited\n[CLAIM]: David C. Nice, of the University of Georgia, describes support for anti-abortion violence as a political weapon against women's rights, one that is associated with tolerance for violence toward women [ref].\n[SENTENCE]: Numerous organizations have also recognized anti-abortion extremism as a form of Christian terrorism [ref].\n"},
+         {'role': 'assistant', 'content': '<|ANSWER|>EXPERT<|ANSWER|>.'},
+         {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should developing countries restrict rural-to-urban migration?\n[CLAIM]: Restrictions on migration would benefit people in the cities economically and socially\n[SENTENCE]: Thus, people who enter the city cannot find work, as production does not grow in relation to the people who enter.\n"},
+         {'role': 'assistant', 'content': '<|ANSWER|>EXPLANATION<|ANSWER|>.'},
+         {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should we legalize same-sex marriage?\n[CLAIM]: The establishment of same-sex marriage is associated with a significant reduction in the rate of attempted suicide among children, with the effect being concentrated among children of a minority sexual orientation.\n[SENTENCE]: No reduction in the rate of attempted suicide among children occurred in a particular state until that state recognized same-sex marriage.\n"},
+         {'role': 'assistant', 'content': '<|ANSWER|>STUDY<|ANSWER|>.'}
+    ]
+    return ex
+    
 def get_examples_fd():
     example = [
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]: This vice president has been an advocate for over a decade for lifting sanctions against Iran, the largest state sponsor of terrorism on the planet.\n[FULL TEXT]: Iran has moved forward with its nuclear weapons program. They're more dangerous today than they were four years ago. North Korea has moved forward with their nuclear weapons program, gone from one to two nuclear weapons to six to eight nuclear weapons. This vice president has been an advocate for over a decade for lifting sanctions against Iran, the largest state sponsor of terrorism on the planet. It's a mistake.\n\n"},
@@ -111,12 +126,16 @@ def get_examples_fd():
         {'role': 'assistant', 'content': "<|ANSWER|>ad populum<|ANSWER|>."},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]: The Democratic party clearly has not learned the right lesson from Hillary Clinton's miserable failure.\n[FULL TEXT]: TITLE: Discussion Thread (Part 3): 2020 Presidential Race Democratic Debates - Post Debate | Night 2 POST: Joe Biden will lose to Trump if he is the nominee. The Democratic party clearly has not learned the right lesson from Hillary Clinton's miserable failure. NOBODY WANTS ESTABLISHMENT POLITICIANS ANYMORE. NOBODY LIKES THE STATUS QUO. Like Jesus Christ you think they would learn. POST: The status quo in America is that its the best its ever been. We live in one of the best societies in the best times that humans have ever experienced.\n\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>guilt by association<|ANSWER|>."},
+        {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]:  So don't you see that it's silly to continue believing in God?\n[FULL TEXT]: According to Freud, your belief in God stems from your need for a strong father figure. So don't you see that it's silly to continue believing in God?\n\n"},
+        {'role': 'assistant', 'content': '<|ANSWER|>causal oversimplification<|ANSWER|>.'},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: Watchdog decries threat to press freedom as China expels some US journalists\n[SENTENCE]: We're going to have to get ready to fight with China. It's either that or allow them to walk all over us. Perhaps some politician can think of something else to do that might get them to stick to their purposed Freedom of the Press.\n[FULL TEXT]: We're going to have to get ready to fight with China. It's either that or allow them to walk all over us. Perhaps some politician can think of something else to do that might get them to stick to their purposed Freedom of the Press.\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>false dilemma<|ANSWER|>."},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]: Your life is fucked because someone decided your life should be shit for being a horny teenager.\n[FULL TEXT]: TITLE: The sex offender registry should only be for people for individuals who pose a risk to the safety of others. Not some 16 year old who sent a dick pic!\r\nPOST: Imagine being a horny naive 16 year old. You were talking to a girl, you guys exchange nudes. You're 21. It's been revealed to other adults that you sent a picture of your dick (nice cock btw). You're on the sex offender registry. You will get almost all job offers turned down. Your life is fucked because someone decided your life should be shit for being a horny teenager.\r\nPOST: 21 year old aren't teenagers\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>appeal to ridicule<|ANSWER|>."},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]: Carbon dioxide hurts nobody' s health.\n[FULL TEXT]: Carbon dioxide hurts nobody' s health. It' s good for plants. Climate change need not endanger anyone.\n\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>false analogy<|ANSWER|>."},
+        {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]:  If indoor smoking laws are passed for bars, the bars will go out of business since people who drink, smoke while they drink.\n[FULL TEXT]: If indoor smoking laws are passed for bars, the bars will go out of business since people who drink, smoke while they drink.\n\n"},
+        {'role': 'assistant', 'content': '<|ANSWER|>slippery slope<|ANSWER|>.'},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: Trinidad & Tobago deports Venezuelan women and children as matter of ‘national security’\n[SENTENCE]: I'd really be interested in seeing opinion polls about what most people think about this issue. I'm not so interested in what some handpicked Twitter activists or NGO figures are saying. Whatever the majority decides should be what dictates the country's policy, nothing else.\n[FULL TEXT]: I'd really be interested in seeing opinion polls about what most people think about this issue. I'm not so interested in what some handpicked Twitter activists or NGO figures are saying. Whatever the majority decides should be what dictates the country's policy, nothing else.\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>appeal to majority<|ANSWER|>."},
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: Singapore Authorities Ban Documentary on Palestinian Teen Activists for ‘Skewed Narrative’\n[SENTENCE]: It is common to want to make sure that friendly relations are not strained by something as simple as a documentary. I think that is what is happening here. Singapore does not want to upset the Israelis over a documentary that is basically framed as propaganda. A country is right to want to protect its best interests first, and that is a natural reaction. I understand the want for freedom of expression and I also think that the movie should be shown, but I understand why the government would be tense about it, but that does not mean that freedoms of expression should be stifled. Perhaps there could be a disclaimer or some kind of statement from the Singapore film festival and/or the government stating that this film was the view of the filmmaker and does not necessarily fall in line with broader views maybe? This way the important factor of allowing of free speech is met and the government can distance itself from angering an ally.\n[FULL TEXT]: It is common to want to make sure that friendly relations are not strained by something as simple as a documentary. I think that is what is happening here. Singapore does not want to upset the Israelis over a documentary that is basically framed as propaganda. A country is right to want to protect its best interests first, and that is a natural reaction. I understand the want for freedom of expression and I also think that the movie should be shown, but I understand why the government would be tense about it, but that does not mean that freedoms of expression should be stifled. Perhaps there could be a disclaimer or some kind of statement from the Singapore film festival and/or the government stating that this film was the view of the filmmaker and does not necessarily fall in line with broader views maybe? This way the important factor of allowing of free speech is met and the government can distance itself from angering an ally.\n"},
@@ -282,7 +301,7 @@ def get_examples(task_names:str, quality_dim:str=None):
         'aduc': get_examples_aduc(),
         'claim_detection': get_examples_cd(),
         'evidence_detection': get_examples_ed(),
-        'evidence_type': get_examples_ed(),
+        'evidence_type': get_examples_et(),
         'fallacies': get_examples_fd(),
         'quality': get_examples_quality(quality_dim),
         'relation': get_examples_ar(),
@@ -381,7 +400,6 @@ def get_dataset_for_task(
     system_prompt:str,
     chat_template:str,
     few_shot:bool = False,
-    cross_val:bool=False,
 ):
     chunk = []
     labels, tr_d, val_d, test_d, change_lbl = get_data_for_task(
@@ -394,18 +412,6 @@ def get_dataset_for_task(
             axis=1,
         )
         test_d['conversations'] = tmp
-    if cross_val:
-        chunks_test = np.array_split(test_d, 10)
-        for c in chunks_test:
-            train_set, val_set, test_chunk = prt.get_datasets(
-                train=tr_d,
-                val=val_d,
-                test=c,
-                chat_template=chat_template,
-                sys_prt=system_prompt,
-            )
-            chunk.append(test_chunk)
-        return labels, train_set, val_set, chunk, change_lbl
     train_set, val_set, test_set = prt.get_datasets(
         tokenizer=tokenizer,
         train=tr_d,
@@ -425,22 +431,20 @@ def get_metric_inference(
     test_result:pd.DataFrame,
     s_file:dict,
     ollama_inference:bool=False,
-    cross_val:bool=False,
 ):
     if not ollama_inference:
         if task_name == 'fallacies':
             metric_single, metric_multi = metrics.get_metrics(change_lbl,   test_result)
-            if not cross_val:
-                plot.plot_metric(
-                    metric=metric_single,
-                    title=f'Scores single for {task_name}',
-                    file_metric=s_file.get('metric_single')
-                )
-                plot.plot_metric(
-                    metric=metric_multi,
-                    title=f'Scores Multi for {task_name}',
-                    file_metric=s_file.get('metric_multi')
-                )
+            plot.plot_metric(
+                metric=metric_single,
+                title=f'Scores single for {task_name}',
+                file_metric=s_file.get('metric_single')
+            )
+            plot.plot_metric(
+                metric=metric_multi,
+                title=f'Scores Multi for {task_name}',
+                file_metric=s_file.get('metric_multi')
+            )
             return (metric_single, metric_multi)
         else:
             metric_single, _ = metrics.get_metrics(
@@ -448,36 +452,33 @@ def get_metric_inference(
                 test_result,
                 is_multi_lbl=False
             )
-            if not cross_val:
-                plot.plot_metric(
-                    metric=metric_single,
-                    title=f'Scores for {task_name}',
-                    file_metric=s_file.get('metric_single')
-                )
+            plot.plot_metric(
+                metric=metric_single,
+                title=f'Scores for {task_name}',
+                file_metric=s_file.get('metric_single')
+            )
             return metric_single
     else:
         if task_name == 'fallacies':
             metric_single, metric_multi = metrics.get_metrics(change_lbl, test_result)
-            if not cross_val:
-                plot.plot_metric(
-                    metric=metric_single,
-                    title=f'Scores Ollama Single for {task_name}',
-                    file_metric=s_file.get('metric_single')
-                )
-                plot.plot_metric(
-                    metric=metric_multi,
-                    title=f'Scores Ollama Multi for {task_name}',
-                    file_metric=s_file.get('metric_multi')
-                )
+            plot.plot_metric(
+                metric=metric_single,
+                title=f'Scores Ollama Single for {task_name}',
+                file_metric=s_file.get('metric_single')
+            )
+            plot.plot_metric(
+                metric=metric_multi,
+                title=f'Scores Ollama Multi for {task_name}',
+                file_metric=s_file.get('metric_multi')
+            )
             return (metric_single, metric_multi)
         else:
             metric_single, _ = metrics.get_metrics(change_lbl, test_result, is_multi_lbl=False)
-            if not cross_val:
-                plot.plot_metric(
-                    metric=metric_single,
-                    title=f'Scores Ollama for {task_name}',
-                    file_metric=s_file.get('metric_single')
-                )
+            plot.plot_metric(
+                metric=metric_single,
+                title=f'Scores Ollama for {task_name}',
+                file_metric=s_file.get('metric_single')
+            )
             return metric_single
 
 def inference_unsloth(
@@ -487,7 +488,6 @@ def inference_unsloth(
     model=None,
     tokenizer=None,
     few_shot:bool=False,
-    cross_val:bool=False,
 ):
     if model is None and tokenizer is None:
         print(f'#### Loading Model for {model_for_task} ####')
@@ -514,32 +514,7 @@ def inference_unsloth(
         system_prompt=system_prompt,
         chat_template=chat_template,
         few_shot=few_shot,
-        cross_val=cross_val,
     )
-    if cross_val:
-        result_all_chunk = []
-        for chunk in test_set:
-            print(f'##### Inference on Chunk #####')
-            test_result = tr.test(
-                model=model,
-                tokenizer=tokenizer,
-                data_test=chunk,
-                labels=labels,
-                few_shot=few_shot,
-            )
-            metric = get_metric_inference(
-                change_lbl,
-                task_name=task_name,
-                test_result=test_result,
-                s_file=s_file,
-                cross_val=cross_val,
-            )
-            if task_name != 'fallacies':
-                result_all_chunk.append(metric.get('score_all_data')[0])
-            else:
-                result_all_chunk.append(metric[0].get('score_all_data')[0])
-                result_all_chunk.append(metric[1].get('score_all_data')[0])
-            return result_all_chunk
     print(f'##### Start inference')
     test_result = tr.test(
         model=model,
@@ -557,63 +532,11 @@ def inference_unsloth(
         s_file=s_file,
     )
     return metric
-    # if task_name == 'fallacies':
-    #     metric_single, metric_multi = metrics.get_metrics(change_lbl, test_result)
-    #     plot.plot_metric(
-    #         metric=metric_single,
-    #         title=f'Scores single for {task_name}',
-    #         file_metric=s_file.get('metric_single')
-    #     )
-    #     plot.plot_metric(
-    #         metric=metric_multi,
-    #         title=f'Scores Multi for {task_name}',
-    #         file_metric=s_file.get('metric_multi')
-    #     )
-    #     return (metric_single, metric_multi)
-    # else:
-    #     metric_single, _ = metrics.get_metrics(
-    #         change_lbl,
-    #         test_result,
-    #         is_multi_lbl=False
-    #     )
-    #     plot.plot_metric(
-    #         metric=metric_single,
-    #         title=f'Scores for {task_name}',
-    #         file_metric=s_file.get('metric_single')
-    #     )
-    #     return metric_single
-
-def infer_chunk(test_d, labels, ollama_model_name):
-    res = []
-    # s = '<[|]ANSWER[|]>'
-    s = r'<\|ANSWER\|>(.*?)<\|(ANSWER|eot_id)\|>'
-    names_dataset = test_d['datasets']
-    true_labels = test_d['answer']
-    print(f'##### Start Inference')
-    for i in test_d['conversations']:
-        response = chat(model=ollama_model_name, messages=i)
-        print(response['message']['content'])
-        print(f'##############################')
-        tmp = re.split(s, response['message']['content'])
-        lbs = {lbl.lower() for lbl in labels}
-        pred = [
-            re.sub(r'[^\w\s_-]', '', i) 
-            for i in tmp 
-            if re.sub(r'[^\w\s_-]', '', i).lower() in lbs
-        ]
-        print(f'# Prediction : {pred}')
-        res.append(pred)
-    tmp_pred = [i if i != [] else ['Failed'] for i in res]
-    pred_flat = list(itertools.chain.from_iterable(tmp_pred))
-    d_res = {'names': names_dataset, 'pred': pred_flat, 'lbl': true_labels}
-    df_res = pd.DataFrame(data=d_res)
-    return df_res
     
 def inference_ollama(
     ollama_model_name:str,
     model_to_use:str,
     task_name:str,
-    cross_val:bool=False
 ):
     print(f'#### Inference on {task_name}')
     time = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
@@ -632,24 +555,6 @@ def inference_ollama(
         task_name=task_name,
         s_file=s_file,
     )
-    if cross_val:
-        result_all_chunk = []
-        chunk = np.array_split(test_d, 10)
-        for c in chunk:
-            df_res = infer_chunk(c)
-            metric = get_metric_inference(
-                change_lbl,
-                task_name=task_name,
-                test_result=df_res,
-                ollama_inference=True,
-                cross_val=True,
-            )
-            if task_name != 'fallacies':
-                result_all_chunk.append(metric.get('score_all_data')[0])
-            else:
-                result_all_chunk.append(metric[0].get('score_all_data')[0])
-                result_all_chunk.append(metric[1].get('score_all_data')[0])
-            return result_all_chunk
     res = []
     # s = '<[|]ANSWER[|]>'
     s = r'<\|ANSWER\|>(.*?)<\|(ANSWER|eot_id)\|>'
@@ -686,34 +591,12 @@ def inference_ollama(
         ollama_inference=True,
     )
     return metric
-    # if task_name == 'fallacies':
-    #     metric_single, metric_multi = metrics.get_metrics(change_lbl, df_res)
-    #     plot.plot_metric(
-    #         metric=metric_single,
-    #         title=f'Scores Ollama Single for {task_name}',
-    #         file_metric=s_file.get('metric_single')
-    #     )
-    #     plot.plot_metric(
-    #         metric=metric_multi,
-    #         title=f'Scores Ollama Multi for {task_name}',
-    #         file_metric=s_file.get('metric_multi')
-    #     )
-    #     return (metric_single, metric_multi)
-    # else:
-    #     metric_single, _ = metrics.get_metrics(change_lbl, df_res, is_multi_lbl=False)
-    #     plot.plot_metric(
-    #         metric=metric_single,
-    #         title=f'Scores Ollama for {task_name}',
-    #         file_metric=s_file.get('metric_single')
-    #     )
-        # return metric_single
 
 def inference_on_all_data(
     model_for_task:str = '',
     model_to_use:str = '',
     inference_method:str = '',
     few_shot:bool = False,
-    cross_val:bool = False,
 ):
     all_result = {}
     task_list=[
@@ -734,20 +617,10 @@ def inference_on_all_data(
                     ollama_model_name=ollama_model,
                     model_to_use=model_to_use,
                     task_name=task,
-                    cross_val=cross_val,
                 )
-                if cross_val:
-                    all_result.update({
-                        task:(
-                            np.mean(result),
-                            np.var(result),
-                            np.std(result),
-                        )
-                    })
-                else:
-                    all_result.update({task: result})
+                all_result.update({task: result})
         case _ :
-            print(f'#### Loading Model ####')
+            print(f'#### Loading Model for {model_for_task} ####')
             model, tokenizer = load_model(model_for_task, model_to_use)
             for task in task_list:
                 result = inference_unsloth(
@@ -757,16 +630,6 @@ def inference_on_all_data(
                     model=model,
                     tokenizer=tokenizer,
                     few_shot=few_shot,
-                    cross_val=cross_val,
                 )
-                if cross_val:
-                    all_result.update({
-                        task: (
-                            np.mean(result),
-                            np.var(result),
-                            np.std(result),
-                        )
-                    })
-                else:
-                    all_result.update({task: result})
+                all_result.update({task: result})
     return all_result

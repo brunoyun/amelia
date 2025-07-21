@@ -270,10 +270,6 @@ def load_node_debate(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     }
     return res
 
-def load_node_angrymen(path:str) -> dict:
-    # TODO
-    pass
-
 def load_ibm_pola(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     all_data = []
     sentences = []

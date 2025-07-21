@@ -20,8 +20,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "aduc": {
         "training_params": {
@@ -46,8 +45,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "claim_detection": {
         "training_params": {
@@ -71,8 +69,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "evidence_detection": {
         "training_params": {
@@ -96,8 +93,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "stance_detection": {
         "training_params": {
@@ -122,8 +118,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "evidence_type": {
         "training_params": {
@@ -147,8 +142,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "relation": {
         "training_params": {
@@ -177,8 +171,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "quality": {
         "training_params": {
@@ -200,8 +193,7 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     },
     "mt_ft": {
         "training_params": {
@@ -221,7 +213,6 @@
             "do_sample": false,
             "save_model": true,
             "quantization": "q8_0"
-        },
-        "params": {}
+        }
     }
 }

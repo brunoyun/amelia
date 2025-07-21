@@ -220,47 +220,22 @@ def load_training_config(
         }
     return config
 
-def load_config_inference(
-    model_name:str,
-    max_seq_length:int,
-    dtype,
-    load_in_4bit:bool,
-    gpu_mem_use:float,
-) -> dict:
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=model_name,
-        max_seq_length=max_seq_length,
-        dtype=dtype,
-        load_in_4bit=load_in_4bit,
-        fast_inference=True,
-        gpu_memory_utilization=gpu_mem_use
-    )
-    config = {
-        'model': model,
-        'tokenizer': tokenizer,
-    }
-    return config
-
 def fn_config(
     task_name:str,
-    do_training:bool,
     training_params:dict,
     params:dict
 ) -> dict:
-    if do_training:
-        config = load_training_config(task_name=task_name, **training_params)
-    else:
-        config = load_config_inference(**params)
+    config = load_training_config(task_name=task_name, **training_params)
     return config
 
-def get_config(task:str=None, do_training:bool=False) -> dict:
+def get_config(task:str=None) -> dict:
     with open('./config.json', 'r') as conf_file:
         conf = json.loads(conf_file.read())
-    return fn_config(task_name=task, do_training=do_training, **conf.get(task))
+    return fn_config(task_name=task, **conf.get(task))
 
-def run_training(task: str=None, do_training: bool=False):
+def run_training(task: str=None):
     if task is not None:
-        config = get_config(task=task, do_training=do_training)
+        config = get_config(task=task)
         match task:
             case 'fallacies':
                 model, tokenizer = run_training_fallacies(**config)
@@ -283,16 +258,3 @@ def run_training(task: str=None, do_training: bool=False):
         return model, tokenizer
     else:
         print(f'Error while getting config for task {task}')
-
-def run_inference(task:str=None):
-    if task is not None:
-        config = get_config(task=task, do_training=False)
-        print(f'Model Inference')
-
-def run(task: str=None, do_training:bool=False) -> tuple[any,any] | None:
-    if task is not None:
-        if do_training:
-            model, tokenizer = run_training(task=task, do_training=do_training)
-            return model, tokenizer
-        else:
-            run_inference(task=task)
