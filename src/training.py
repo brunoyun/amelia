@@ -11,6 +11,8 @@ import re
 import pandas as pd
 
 def gen(p, model, tokenizer, text_streamer):
+    """Generation an answer following a prompt
+    """
     txt = tokenizer.apply_chat_template(
         p,
         add_generation_prompt=True,
@@ -25,6 +27,22 @@ def gen(p, model, tokenizer, text_streamer):
     return output
 
 def format_output(answer: list, labels: set, few_shot:bool=False) -> list:
+    """Formate the output of the model
+
+    Parameters
+    ----------
+    answer : list
+        answer of the model
+    labels : set
+        label of a specific task
+    few_shot : bool, optional
+        set to true if performing few-shot, by default False
+
+    Returns
+    -------
+    list
+        formate output
+    """
     # s = '<[|]ANSWER[|]>'
     s = r'<\|ANSWER\|>(.*?)<\|(ANSWER|eot_id)\|>'
     labels = {lbl.lower() for lbl in labels}
@@ -51,6 +69,25 @@ def zero_shot_gen(
     text_streamer: TextStreamer,
     few_shot:bool=False,
 ) -> list:
+    """Generate an answer
+
+    Parameters
+    ----------
+    data : Dataset
+        data
+    model
+    tokenizer
+    labels : set
+        labels of a specific task
+    text_streamer : TextStreamer
+    few_shot : bool, optional
+        set to True if performing few-shot, by default False
+
+    Returns
+    -------
+    list
+        output of the generation
+    """
     res= []
     prompt = data['conversations']
     for prt in prompt:
@@ -68,6 +105,20 @@ def train(
     max_seq_length,
     training_args
 ):
+    """Train the model
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    data_train : Dataset
+        Train data
+    data_val : Dataset
+        Validation data
+    max_seq_length
+    training_args
+        Training arguments
+    """
     trainer = SFTTrainer(
         model = model,
         tokenizer = tokenizer,
@@ -95,6 +146,26 @@ def test(
     result_file=None,
     few_shot:bool=False
 ) -> pd.DataFrame:
+    """Test the model
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    data_test : Dataset
+        Test Dataset
+    labels : set
+        labels of a specific task
+    result_file : optional
+        filepath to save the test result, by default None
+    few_shot : bool, optional
+        set to True if performing few-shot, by default False
+
+    Returns
+    -------
+    pd.DataFrame
+        Test result
+    """
     FastLanguageModel.for_inference(model)
     text_streamer = TextStreamer(tokenizer, skip_prompt=True)
     pred = zero_shot_gen(
@@ -116,6 +187,8 @@ def test(
     return df_res
 
 def save_model(directory, model, tokenizer, quantization:str) -> None:
+    """Save the model locally
+    """
     model.save_pretrained_gguf(
         directory,
         tokenizer,

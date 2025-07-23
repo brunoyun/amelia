@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 def get_precision_recall(data):
+    """Get the precision or the recall
+    """
     try:
         tmp = data.apply(
             lambda x: x['pred'] in x['lbl'],
@@ -18,6 +20,8 @@ def get_precision_recall(data):
         return score, tp, fp_fn
 
 def get_recall_multi(data, label):
+    """Get the recall, used only for the FD task
+    """
     n_lbl = len(label)
     ratio = []
     for l in label:
@@ -32,6 +36,8 @@ def get_recall_multi(data, label):
     return rec, tp, fn
 
 def get_f1(precision, recall):
+    """Get the F1 score
+    """
     try:
         f1 = 2 * ((precision * recall) / (precision + recall))
     except ZeroDivisionError:
@@ -39,6 +45,8 @@ def get_f1(precision, recall):
     return f1
 
 def get_metrics_single(change_lbl, data, labels):
+    """Get the different metrics (F1, precision and recall)
+    """
     tp_preci = 0
     tp_rec = 0
     fn = 0
@@ -71,6 +79,8 @@ def get_metrics_single(change_lbl, data, labels):
     return res
 
 def get_metrics_multi(change_lbl, data, labels):
+    """Get the different metrics (F1, precision and recall), used only for the FD task
+    """
     tp_preci = 0
     tp_rec = 0
     fn = 0
@@ -102,6 +112,24 @@ def get_metrics_multi(change_lbl, data, labels):
     return res
 
 def get_metrics(change_lbl, data:pd.DataFrame, is_multi_lbl:bool=True):
+    """Get the different metrics
+
+    Parameters
+    ----------
+    change_lbl
+        task specific function to unifie the name of the labels
+    data : pd.DataFrame
+        prediction made during testing
+    is_multi_lbl : bool, optional
+        set to False for all tasks except the FD task, by default True
+
+    Returns
+    -------
+    dict
+        dictionary containing the metrics
+    dict
+        used only for the FD task, dictionary containing the metrics
+    """
     data_single = data.apply(
         lambda x: x if len(x['lbl'])<=1 else np.nan,
         axis=1,

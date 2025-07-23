@@ -42,12 +42,36 @@ def map_edu_adu(edu: dict, adu: list[dict]) -> dict:
     return res
 
 def unifie_labels(label: str) -> str:
+    """Unifie the name of the labels
+    """
     if label == 'MajorClaim' or label == 'Implicit Claim':
         return 'Claim'
     else:
         return label
 
 def load_pe(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
+    """Load the Persuasive Essays dataset
+
+    Parameters
+    ----------
+    path : str
+        path to the dataset jsonl file
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets:
+        {
+            'train': train_data_split,
+            'validation': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
+    """
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -77,6 +101,28 @@ def load_pe(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
     return res
 
 def load_abstrct_neo(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
+    """Load the AbstRCT neoplasm dataset
+
+    Parameters
+    ----------
+    path : str
+        path to the dataset jsonl file
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets:
+        {
+            'train': train_data_split,
+            'validation': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
+    """
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -152,6 +198,28 @@ def load_abstrct_mixed(
     return res
 
 def load_mtp1(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
+    """Load the Microtext part 1 dataset
+
+    Parameters
+    ----------
+    path : str
+        path to the dataset jsonl file
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets:
+        {
+            'train': train_data_split,
+            'validation': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
+    """
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -186,6 +254,28 @@ def load_mtp1(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
         
 
 def load_mtp2(path:str, val_size:float=0.2, test_size:float=0.2) -> dict:
+    """Load the Microtext part 2 dataset
+
+    Parameters
+    ----------
+    path : str
+        path to the dataset jsonl file
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    dict
+        dictionary containing the data split into 3 sets:
+        {
+            'train': train_data_split,
+            'validation': val_data_split,
+            'test': test_data_split,
+            'list_label': label of the dataset
+        }
+    """
     all_data = []
     sentences = []
     with open(path, 'r') as f:
@@ -224,6 +314,24 @@ def load_all_datasets(
     val_size:float=0.2,
     test_size:float=0.2
 ) -> tuple[dict, set]:
+    """Load all dataset for the ACC task
+
+    Parameters
+    ----------
+    paths : dict
+        dictionary containing the path to the datasets files
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    dict
+        Dictionary containing the data from the different datasets
+    set
+        Labels for the ACC task
+    """
     res = {
         'mtp1': load_mtp1(paths.get('mtp1'), val_size, test_size),
         'mtp2': load_mtp2(paths.get('mtp2'), val_size, test_size),
@@ -234,6 +342,20 @@ def load_all_datasets(
     return res, labels
 
 def format_user_prompt(d:dict, labels:set) -> str:
+    """Create the user prompt used during training and inference
+
+    Parameters
+    ----------
+    d : dict
+        data
+    labels : set
+        labels for the task
+
+    Returns
+    -------
+    str
+        user prompt
+    """
     user_prt = ''
     topic = 'unknown'
     full_text = d.get('text')
@@ -250,6 +372,32 @@ def load_data(
     val_size:float=0.2,
     test_size:float=0.2
 ) -> tuple:
+    """Load the data
+
+    Parameters
+    ----------
+    paths : dict
+        path to the datasets files
+    sys_prt : str
+        system prompt for the task
+    n_sample : int
+        number of training sample
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    labels
+        set of labels for the task
+    ptr_train
+        Train data
+    prt_val
+        Validation data
+    prt_test
+        Test data
+    """
     data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
@@ -261,6 +409,40 @@ def load_data(
     return labels, prt_train, prt_val, prt_test
 
 def get_data(savefile:dict) -> tuple:
+    """Get the sampled data from file
+
+    Parameters
+    ----------
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+
+    Returns
+    -------
+    labels
+        set of labels for the task
+    ptr_train
+        Train data
+    prt_val
+        Validation data
+    prt_test
+        Test data
+    """
     converter = {'conversations': literal_eval, 'answer': literal_eval}
     labels = set(
         pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
@@ -287,6 +469,41 @@ def test_task(
     n_sample:int,
     savefile:dict
 ) -> tuple:
+    """Test the task after training
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    data_test : Dataset
+        Test data
+    labels : set
+        set of labels for the task
+    n_sample : int
+        number of sample for the training
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+
+    Returns
+    -------
+    model and tokenizer
+    """
     print(f'##### Testing #####')
     result_test = tr.test(
         model=model,
@@ -321,6 +538,55 @@ def run_training_aduc(
     save_model:bool,
     quantization: str
 ):
+    """Training function for the ACC task
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    training_args
+    max_seq_length : int
+    n_sample : int
+        number of sample for training
+    val_size : float
+        fraction of the validation set
+    test_size : float
+        fraction of the test set
+    paths : dict
+        paths to the dataset file
+    sys_prt : str
+        system prompt for the task
+    do_sample : bool
+        re-sample the data if true
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+    chat_template : str
+        chat template for the Llama model
+    save_model : bool
+        save the model locally if True
+    quantization : str
+        gguf quantization, used only if save_model=True
+
+    Returns
+    -------
+    trained model and tokenizer
+    """
     print(f'##### Load Data #####')
     if do_sample:
         labels, prt_train, prt_val, prt_test = load_data(

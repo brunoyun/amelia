@@ -181,7 +181,7 @@
             "load_in_4bit": true,
             "gpu_mem_use": 0.6,
             "r_lora": 16,
-            "n_sample": 4000,
+            "n_sample": 267,
             "epoch": 2,
             "n_eval": 8,
             "val_size": 0.2,

@@ -199,6 +199,31 @@ def get_datasets(
     chat_template:str,
     sys_prt:str
 )->tuple[Dataset, Dataset, Dataset]:
+    """Get the training, validation and testing Datasets
+
+    Parameters
+    ----------
+    tokenizer
+    train : pd.DataFrame
+        Training data
+    val : pd.DataFrame
+        Validation data
+    test : pd.DataFrame
+        Test data
+    chat_template : str
+        chat template of the Llama model
+    sys_prt : str
+        System prompt associated to the specific task
+
+    Returns
+    -------
+    Dataset
+        Train Dataset
+    Dataset
+        Validation Dataset
+    Dataset
+        Test Dataset
+    """
     data_train = apply_chat_template(
         Dataset.from_pandas(train),
         tokenizer=tokenizer,

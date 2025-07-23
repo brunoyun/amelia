@@ -126,6 +126,19 @@ def get_nb_element_split(
     data: list[str],
     nb_element: pd.Series,
 ) -> pd.Series:
+    """Get the number of element to sample for one split
+
+    Parameters
+    ----------
+    data : list[str]
+        data to sample
+    nb_element : pd.Series
+
+    Returns
+    -------
+    pd.Series
+        number of element in one split
+    """
     df = pd.DataFrame(data)
     df_elmt = get_nb_element(
         df['label'].apply(
@@ -139,6 +152,24 @@ def get_nb_element_all_split(
     data: dict, 
     labels: set
 ) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """Get the number for element in each split
+
+    Parameters
+    ----------
+    data : dict
+        data to sample
+    labels : set
+        set of the different labels
+
+    Returns
+    -------
+    pd.Series
+        number of element to sample for the train set
+    pd.Series
+        number of element to sample for the validation set
+    pd.Series
+        number of element to sample for the test set
+    """
     nb_elmt_train = pd.Series(0, index=labels).sort_index()
     nb_elmt_val = pd.Series(0, index=labels).sort_index()
     nb_elmt_test = pd.Series(0, index=labels).sort_index()
@@ -176,6 +207,8 @@ def get_spl_datasets(
         number of element to sample
     nb_element : pd.Series
         number of element to sample per labels
+    task : str
+        used only for the quality task, by default None
 
     Returns
     -------
@@ -237,6 +270,33 @@ def get_all_spl(
     test_size: float=0.2,
     task:str=None
 ) -> dict:
+    """Get the sampled data for training, validation and test set
+
+    Parameters
+    ----------
+    data : dict
+        Data to sample
+    labels : set
+        set of the different labels
+    n_sample : int, optional
+        number of element of the training sample, by default 300
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+    task : str, optional
+        used only for the quality task, by default None
+
+    Returns
+    -------
+    dict
+        dictionary containing the sampled data under the format
+        {
+            train
+            validation
+            test
+        }
+    """
     res = {}
     lst_spl_train, lst_spl_val, lst_spl_test = [], [], []
     nb_elmt_train, nb_elmt_val, nb_elmt_test = get_nb_element_all_split(

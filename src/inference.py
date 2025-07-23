@@ -24,6 +24,8 @@ import src.relation as arc
 import src.stance_detect as sd
 
 def get_checkpoint_path(task_name:str):
+    """Get the training checkpoint folder path
+    """
     checkpoint = {
         'aduc': f'./outputs/aduc/2025-05-07_17_29_07_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250',
         'claim_detection': f'./outputs/claim_detection/2025-05-09_14_57_11_meta-Llama-3.1-8B-Instruct_2e4000spl2_train_resp/checkpoint-250',
@@ -37,23 +39,29 @@ def get_checkpoint_path(task_name:str):
     return checkpoint.get(task_name)
 
 def get_ft_model(task_name:str):
+    """Get the fine-tuned model for a specific task among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    """
     st_model = {
-        'aduc': f'./gguf_model/aduc/Llama-3.1-Amelia-ADUC-8B-v1',
-        'claim_detection': f'./gguf_model/claim_detection/Llama-3.1-Amelia-CD-8B-v1',
-        'evidence_detection': f'./gguf_model/evidence_detection/Llama-3.1-Amelia-ED-8B-v1',
-        'evidence_type': f'./gguf_model/evidence_type/Llama-3.1-Amelia-ET-8B-v1',
-        'fallacies': f'./gguf_model/fallacies/Llama-3.1-Amelia-FD-8B-v1',
-        'relation': f'./gguf_model/relation/Llama-3.1-Amelia-AR-8B-v1',
-        'stance_detection': f'./gguf_model/stance_detection/Llama-3.1-Amelia-SD-8B-v1',
-        'quality': f'./gguf_model/quality/Llama-3.1-Amelia-AQA-8B-v1',
-        'mt_ft': f'./gguf_model/mt_ft/Llama-3.1-Amelia-MTFT-8B-v1',
+        'aduc': f'brunoyun/Llama-3.1-Amelia-ADUC-8B-v1', # f'./gguf_model/aduc/Llama-3.1-Amelia-ADUC-8B-v1',
+        'claim_detection': f'brunoyun/Llama-3.1-Amelia-CD-8B-v1',# f'./gguf_model/claim_detection/Llama-3.1-Amelia-CD-8B-v1',
+        'evidence_detection': f'brunoyun/Llama-3.1-Amelia-ED-8B-v1', # f'./gguf_model/evidence_detection/Llama-3.1-Amelia-ED-8B-v1',
+        'evidence_type': f'brunoyun/Llama-3.1-Amelia-ET-8B-v1',# f'./gguf_model/evidence_type/Llama-3.1-Amelia-ET-8B-v1',
+        'fallacies': f'brunoyun/Llama-3.1-Amelia-FD-8B-v1', # f'./gguf_model/fallacies/Llama-3.1-Amelia-FD-8B-v1',
+        'relation': f'brunoyun/Llama-3.1-Amelia-AR-8B-v1', # f'./gguf_model/relation/Llama-3.1-Amelia-AR-8B-v1',
+        'stance_detection': f'brunoyun/Llama-3.1-Amelia-SD-8B-v1', # f'./gguf_model/stance_detection/Llama-3.1-Amelia-SD-8B-v1',
+        'quality': f'brunoyun/Llama-3.1-Amelia-AQA-8B-v1', # f'./gguf_model/quality/Llama-3.1-Amelia-AQA-8B-v1',
+        'mt_ft': f'brunoyun/Llama-3.1-Amelia-MTFT-8B-v1', # f'./gguf_model/mt_ft/Llama-3.1-Amelia-MTFT-8B-v1',
     }
     return st_model.get(task_name)
 
 def get_merged_model():
+    """Get the merged model
+    """
     return f'./merged_model/conf_della_4'
 
 def get_syst_prompt(task_name:str):
+    """Get the system prompt for a specific task
+    """
     d_sys_prt = {
         'aduc': f'You are an expert in argumentation. Your task is to determine whether the given [SENTENCE] is a Claim or a Premise. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Premise in the answer section:\n<|ANSWER|><answer><|ANSWER|>.',
         'claim_detection': f'You are an expert in argumentation. Your task is to determiner whether the given [SENTENCE] is a Claim or Non-claim. Utilize the [TOPIC] and the [FULL TEXT] as context to support your decision\nYour answer must be in the following format with only Claim or Non-claim in the answer section:\n<|ANSWER|><answer><|ANSWER|>.',
@@ -67,6 +75,8 @@ def get_syst_prompt(task_name:str):
     return d_sys_prt.get(task_name)
 
 def get_examples_aduc():
+    """Get the few-shot examples for the ACC task
+    """
     ex = [
             {'role': 'user', 'content': "[TOPIC]: allow_shops_to_open_on_holidays_and_sundays\n[SENTENCE]: It is quite clear that Sunday should remain a day of rest.\n[FULL TEXT]: It is quite clear that Sunday should remain a day of rest.For you can go shopping 6 days a week,as shops are open till 10pm on some days.Thus Sundays should remain a day for getting together with family,otherwise there will be a new kind of leisure activity where people spend their time in supermarkets instead of outside or in conversation etc.Furthermore, there's no need to keep shops open on Sundays.\n"},
             {'role': 'assistant', 'content': "<|ANSWER|>Claim<|ANSWER|>."},
@@ -76,6 +86,8 @@ def get_examples_aduc():
     return ex
 
 def get_examples_cd():
+    """Get the few-shot examples for the CD task
+    """
     ex =  [
             {'role': 'user', 'content': "[TOPIC]: Should sex education courses be compulsory in middle schools?\n[SENTENCE]: Rubin and Kindendall expressed that sex education is not merely the topics of reproduction and teaching how babies are conceived and born.\n[FULL TEXT]: Rubin and Kindendall expressed that sex education is not merely the topics of reproduction and teaching how babies are conceived and born.\n"},
             {'role': 'assistant', 'content': "<|ANSWER|>Claim<|ANSWER|>."},
@@ -85,6 +97,8 @@ def get_examples_cd():
     return ex
 
 def get_examples_ed():
+    """Get the few-shot examples for ED task
+    """
     ex = [
             {'role': 'user', 'content': "[TOPIC]: We should subsidize vocational education\n[ARGUMENT]: subsidizing vocational education is expensive\n[SENTENCE]: A report by the National Skills Coalition in 2019 found that subsidizing vocational education can reduce funding for other important programs, such as financial aid, student support services, and research and development.\n"},
             {'role': 'assistant', 'content': "<|ANSWER|>Evidence<|ANSWER|>."},
@@ -94,6 +108,8 @@ def get_examples_ed():
     return ex
 
 def get_examples_et():
+    """Get the few-shot exampled for the ET task
+    """
     ex = [
          {'role': 'user', 'content': "[TYPE]: {'NONE', 'ANECDOTAL', 'EXPERT', 'EXPLANATION', 'STUDY'}\n[TOPIC]: Should we cancel the standardized test for university entrance\n[CLAIM]: “Standardized tests can level the playing field for low-income and rural college applicants,” writes Rich Saunders for the Chronicle of Higher Education.\n[SENTENCE]: Still, some say that standardized testing is one of the most objective measures currently at schools disposal for assessing student achievement and potential.\n"},
          {'role': 'assistant', 'content': '<|ANSWER|>NONE<|ANSWER|>.'},
@@ -109,6 +125,8 @@ def get_examples_et():
     return ex
     
 def get_examples_fd():
+    """Get the few-shot examples for the FD task
+    """
     example = [
         {'role': 'user', 'content': "[FALLACY]: {'appeal to ridicule', 'none', 'appeal to worse problems', 'straw man', 'causal oversimplification', 'guilt by association', 'false analogy', 'ad hominem', 'appeal to authority', 'appeal to fear', 'appeal to tradition', 'slippery slope', 'circular reasoning', 'ad populum', 'hasty generalization', 'false dilemma', 'equivocation', 'appeal to nature', 'appeal to majority', 'false causality'}\n[TITLE]: unknown\n[SENTENCE]: This vice president has been an advocate for over a decade for lifting sanctions against Iran, the largest state sponsor of terrorism on the planet.\n[FULL TEXT]: Iran has moved forward with its nuclear weapons program. They're more dangerous today than they were four years ago. North Korea has moved forward with their nuclear weapons program, gone from one to two nuclear weapons to six to eight nuclear weapons. This vice president has been an advocate for over a decade for lifting sanctions against Iran, the largest state sponsor of terrorism on the planet. It's a mistake.\n\n"},
         {'role': 'assistant', 'content': "<|ANSWER|>appeal to fear<|ANSWER|>."},
@@ -154,6 +172,8 @@ def get_examples_fd():
     return example
 
 def get_examples_ar():
+    """Get the few-shot examples for the AR task
+    """
     ex = [
             {'role': 'user', 'content': "[RELATION]: {'support', 'no relation', 'attack'}\n[TOPIC]: higher_dog_poo_fines\n[SOURCE]: due to the dirt, the stench and the often considerable effort to get rid of it.\n[TARGET]: Stepping in dog dirt is gross and absolutely ruins your day\n"},
             {'role': 'assistant', 'content': "<|ANSWER|>support<|ANSWER|>."},
@@ -165,6 +185,8 @@ def get_examples_ar():
     return ex
 
 def get_examples_sd():
+    """Get the few-shot examples for the SD task
+    """
     ex = [
             {'role': 'user', 'content': "[TOPIC]: This house would ban gambling\n[SENTENCE]: problem gambling has been shown to cause dysfunctional families\n"},
             {'role': 'assistant', 'content': "<|ANSWER|>For<|ANSWER|>."},
@@ -174,6 +196,8 @@ def get_examples_sd():
     return ex
 
 def get_examples_quality(quality_dim:str):
+    """Get the few-shot examples for the AQ task
+    """
     examples = {
         'overall_quality': [
             {'role': 'user', 'content': "[QUALITY]: {'Average', 'High', 'Low'}\n[TOPIC]: personal-pursuit-or-advancing-the-common-good\n[STANCE]: personal-pursuit\n[DEFINITION]: overall_quality: Argumentation quality in total\n[SENTENCE]: Human nature is to endeavor personal pursuit. If you assume that human nature is to endeavor advancing the common good, then you're going to get screwed by someone who endeavors personal pursuit. Most Americans endeavor advancing the common good; which is why they get screwed by politicians who endeavor personal pursuit. If everyone endeavors personal pursuit, then we would keep each other in check. It is easier to get most people to endeavor personal pursuit than it is to get most people to endeavor advancing the common good; which is why communism failed.\n"},
@@ -297,6 +321,8 @@ def get_examples_quality(quality_dim:str):
     return examples.get(quality_dim)
 
 def get_examples(task_names:str, quality_dim:str=None):
+    """Get the few-shot examples for a specific task
+    """
     d_examples = {
         'aduc': get_examples_aduc(),
         'claim_detection': get_examples_cd(),
@@ -310,6 +336,8 @@ def get_examples(task_names:str, quality_dim:str=None):
     return d_examples.get((task_names))
 
 def few_shot_prompt(x, task_name: str):
+    """Create the prompt for the few-shot
+    """
     conv = x['conversations']
     if task_name != 'quality':
         example = get_examples(task_name)
@@ -339,6 +367,19 @@ def few_shot_prompt(x, task_name: str):
     return conv
 
 def load_model(model_for_task:str, model_to_use:str):
+    """Load the model for inference
+
+    Parameters
+    ----------
+    model_for_task : str
+        task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    model_to_use : str
+        one among [few-shot, zero-shot, merged, fine-tuned]
+
+    Returns
+    -------
+    model and tokenizer
+    """
     max_seq_lenght = 2048
     dtype = None
     gpu_mem_use = 0.6
@@ -366,6 +407,44 @@ def load_model(model_for_task:str, model_to_use:str):
     return model, tokenizer
 
 def get_data_for_task(task_name:str, s_file:dict):
+    """Get the data for a specific task
+
+    Parameters
+    ----------
+    task_name : str
+        task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    s_file : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+
+    Returns
+    -------
+    labels
+        set of labels of the task
+    tr_d
+        Train data
+    val_d
+        Validation data
+    test_d
+        Test data
+    change_lbl
+        Task specific function to unifie the labels name
+    """
     match task_name:
         case 'aduc':
             labels, tr_d, val_d, test_d = aduc.get_data(s_file)
@@ -401,7 +480,51 @@ def get_dataset_for_task(
     chat_template:str,
     few_shot:bool = False,
 ):
-    chunk = []
+    """Get the Dataset for a specific task
+
+    Parameters
+    ----------
+    task_name : str
+        task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    tokenizer
+    s_file : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }_description_
+    system_prompt : str
+        system prompt for a specific task
+    chat_template : str
+        chat template for the Llama model
+    few_shot : bool, optional
+        set to true if doing inference in a few-shot training, by default False
+
+    Returns
+    -------
+    labels
+        set of labels of the task
+    tr_d
+        Train dataset
+    val_d
+        Validation dataset
+    test_d
+        Test dataset
+    change_lbl
+        Task specific function to unifie the labels name
+    """
     labels, tr_d, val_d, test_d, change_lbl = get_data_for_task(
         task_name=task_name,
         s_file=s_file
@@ -432,6 +555,44 @@ def get_metric_inference(
     s_file:dict,
     ollama_inference:bool=False,
 ):
+    """Get the metrics
+
+    Parameters
+    ----------
+    change_lbl : _type_
+        Task specific function to unifie the labels
+    task_name : str
+        task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    test_result : pd.DataFrame
+        prediction made by the model
+    s_file : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+    ollama_inference : bool, optional
+        set to true if inference was made using ollama, by default False
+
+    Returns
+    -------
+    dict
+        dictionary containing the metrics
+    dict
+        in the case of the fallacy task, dictionary containing the metrics
+    """
     if not ollama_inference:
         if task_name == 'fallacies':
             metric_single, metric_multi = metrics.get_metrics(change_lbl,   test_result)
@@ -489,6 +650,28 @@ def inference_unsloth(
     tokenizer=None,
     few_shot:bool=False,
 ):
+    """Model inference with unsloth
+
+    Parameters
+    ----------
+    task_name : str
+        inference on task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    model_for_task : str
+        task name for which the model was fine-tuned among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    model_to_use : str
+        one among [few-shot, zero-shot, merged, fine-tuned]
+    model : optional
+        by default None
+    tokenizer : optional
+        by default None
+    few_shot : bool, optional
+        set to true if inference in a few-shot settings, by default False
+
+    Returns
+    -------
+    dict
+        result of the inference
+    """
     if model is None and tokenizer is None:
         print(f'#### Loading Model for {model_for_task} ####')
         model, tokenizer = load_model(model_for_task, model_to_use)
@@ -538,6 +721,22 @@ def inference_ollama(
     model_to_use:str,
     task_name:str,
 ):
+    """Inference with ollama
+
+    Parameters
+    ----------
+    ollama_model_name : str
+        name of the model
+    model_to_use : str
+        one among [few-shot, zero-shot, merged, fine-tuned]
+    task_name : str
+        inference on task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+
+    Returns
+    -------
+    dict
+        result of the inference
+    """
     print(f'#### Inference on {task_name}')
     time = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
     s_file = utils.get_savefile(
@@ -598,6 +797,24 @@ def inference_on_all_data(
     inference_method:str = '',
     few_shot:bool = False,
 ):
+    """Perform inference on all task
+
+    Parameters
+    ----------
+    model_for_task : str, optional
+        task name for which the model was fine-tuned among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft], by default ''
+    model_to_use : str, optional
+        one among [few-shot, zero-shot, merged, fine-tuned], by default ''
+    inference_method : str, optional
+        set to ollama if performing inference with ollam, by default ''
+    few_shot : bool, optional
+        set to true if performing inference in a few-shot setting, by default False
+
+    Returns
+    -------
+    dict
+        dictionary containing the result of the inference
+    """
     all_result = {}
     task_list=[
         'aduc',

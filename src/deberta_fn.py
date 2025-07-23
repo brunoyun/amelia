@@ -112,6 +112,8 @@ def tokenize_fn(batch, tokenizer):
     )
 
 def get_datasets(tokenizer, tokenize_fn, task_name:str):
+    """Get the training and testing datasets
+    """
     if task_name != 'relation':
         train_data, test_data = get_bert_data(task_name)
     else:
@@ -130,6 +132,24 @@ def get_datasets(tokenizer, tokenize_fn, task_name:str):
     return train_dataset, test_dataset
 
 def compute_metrics(pred):
+    """Compute the F1 score, precision on recall
+
+    Parameters
+    ----------
+    pred : _type_
+        prediction made by the model
+
+    Returns
+    -------
+    dict
+        dictionary containing the result
+        {
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+            'acc': acc,
+        }
+    """
     label = pred.label_ids
     preds = pred.predictions.argmax(-1)
     precision, recall, f1, _ = precision_recall_fscore_support(label, preds, average='weighted')

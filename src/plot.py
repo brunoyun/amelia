@@ -9,6 +9,37 @@ def plot_stat_sample(
     title: str,
     savefile=None,
 ) -> None:
+    """Plot the statistic of a sample
+
+    Parameters
+    ----------
+    change_lbl
+        task specific function to unifie the name of the labels
+    sample : pd.DataFrame
+        data sample
+    lst_labels : set
+        labels of a specific task
+    title : str
+        title of the plot
+    savefile :  optional
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }, by default None
+    """
     width = 0.3
     fig, ax = plt.subplots()
     d = {}
@@ -84,6 +115,21 @@ def plot_metric(
     file_plot=None,
     file_metric=None,
 ):
+    """Plot the test result
+
+    Parameters
+    ----------
+    metric : dict
+        result
+    columns : list[str], optional
+        columns names, by default ['f1', 'precision', 'recall']
+    title : str, optional
+        title of the plot, by default ''
+    file_plot : optional
+        filepath to save the plot, by default None
+    file_metric : optional
+        filepath to save the result, by default None
+    """
     df_metric = pd.DataFrame().from_dict(
         metric,
         orient='index',
@@ -112,6 +158,41 @@ def stat_sample(
     labels:set,
     savefile:dict=None
 ):
+    """Plot the statistics for the sampled data
+
+    Parameters
+    ----------
+    change_lbl
+        task specific function to unifie the labels name
+    task_name : str
+        task name among [aduc, claim_detection, evidence_detection, evidence_type, fallacies, relation, stance_detection, mt_ft]
+    sample_train : pd.DataFrame
+        sampled train data
+    sample_val : pd.DataFrame
+        sampled validation data
+    sample_test : pd.DataFrame
+        sampled test data
+    labels : set
+        labels of a specific task
+    savefile : dict, optional
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }, by default None
+    """
     plot_stat_sample(
         change_lbl,
         sample=sample_train,

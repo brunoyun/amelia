@@ -12,8 +12,6 @@ import src.training as tr
 from ast import literal_eval
 from datasets import Dataset
 
-### Datasets function ###
-
 def change_lbl(labels: list) -> list:
     new_lbl = []
     replace_lbl = {
@@ -241,8 +239,6 @@ def load_all_datasets(
     # labels = get_lbls_inter(res)
     return res, labels
 
-### Prompting Function ###
-
 def format_user_prompt(d: dict, labels: set) -> str:
     """Format the user prompt
 
@@ -271,8 +267,6 @@ def format_user_prompt(d: dict, labels: set) -> str:
     user_prt = f'[FALLACY]: {labels}\n[TITLE]: {title}\n[SENTENCE]: {sentences}\n[FULL TEXT]: {full_text}\n'
     return user_prt
 
-# Run Training and Testing
-
 def load_data(
     paths:dict,
     sys_prt:str,
@@ -280,6 +274,32 @@ def load_data(
     val_size:float=0.2,
     test_size:float=0.2
 ) -> tuple:
+    """Load the data
+
+    Parameters
+    ----------
+    paths : dict
+        path to the datasets files
+    sys_prt : str
+        system prompt for the task
+    n_sample : int
+        number of training sample
+    val_size : float, optional
+        fraction of the validation set, by default 0.2
+    test_size : float, optional
+        fraction of the test set, by default 0.2
+
+    Returns
+    -------
+    labels
+        set of labels for the task
+    ptr_train
+        Train data
+    prt_val
+        Validation data
+    prt_test
+        Test data
+    """
     data, labels = load_all_datasets(paths, val_size, test_size)
     spl_data = spl.get_all_spl(data, labels, n_sample)
     prt_train, prt_val, prt_test = prt.get_prt(
@@ -291,6 +311,40 @@ def load_data(
     return labels, prt_train, prt_val, prt_test
 
 def get_data(savefile:dict) -> tuple:
+    """Get the sampled data from file
+
+    Parameters
+    ----------
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+
+    Returns
+    -------
+    labels
+        set of labels for the task
+    ptr_train
+        Train data
+    prt_val
+        Validation data
+    prt_test
+        Test data
+    """
     converter = {'conversations': literal_eval, 'answer': literal_eval}
     fallacies = set(
         pd.read_csv(savefile.get('labels_file'))['labels'].tolist()
@@ -317,6 +371,41 @@ def test_task(
     n_sample:int,
     savefile:dict
 ) -> tuple:
+    """Test the task after training
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    data_test : Dataset
+        Test data
+    labels : set
+        set of labels for the task
+    n_sample : int
+        number of sample for the training
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+
+    Returns
+    -------
+    model and tokenizer
+    """
     print(f'##### Testing #####')
     result_test = tr.test(
         model=model,
@@ -357,6 +446,55 @@ def run_training_fallacies(
     save_model: bool,
     quantization: str
 ) -> tuple:
+    """Training function for the FD task
+
+    Parameters
+    ----------
+    model
+    tokenizer
+    training_args
+    max_seq_length : int
+    n_sample : int
+        number of sample for training
+    val_size : float
+        fraction of the validation set
+    test_size : float
+        fraction of the test set
+    paths : dict
+        paths to the dataset file
+    sys_prt : str
+        system prompt for the task
+    do_sample : bool
+        re-sample the data if true
+    savefile : dict
+        dictionary containing the file path to the sampled data
+        {
+            'labels_file': labels_file,
+            'train_spl_file': train_spl_file,
+            'val_spl_file': val_spl_file,
+            'test_spl_file': test_spl_file,
+            'test_result_file': test_result_file,
+            'stat_train': file_stat_train,
+            'stat_val': file_stat_val,
+            'stat_test': file_stat_test,
+            'plot_single': file_plot_single,
+            'plot_multi': file_plot_multi,
+            'metric_single': file_metric_single,
+            'metric_multi': file_metric_multi,
+            'outputs_dir': outputs_dir,
+            'model_dir': model_dir
+        }
+    chat_template : str
+        chat template for the Llama model
+    save_model : bool
+        save the model locally if True
+    quantization : str
+        gguf quantization, used only if save_model=True
+
+    Returns
+    -------
+    trained model and tokenizer
+    """
     print(f'##### Load data #####')
     if do_sample:
         fallacies, prt_train, prt_val, prt_test = load_data(
